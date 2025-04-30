@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const cheerio = require('cheerio');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -17,23 +18,13 @@ app.get('/search', async (req, res) => {
   }
 
   try {
-    // This example simulates SpankBang search results.
-    const dummyResults = [
-      {
-        title: `Results for "${query}"`,
-        url: `https://spankbang.com/s/${encodeURIComponent(query)}`,
-        duration: "10:32",
-        source: "SpankBang"
-      },
-      {
-        title: `Another hit: ${query}`,
-        url: `https://xvideos.com/?k=${encodeURIComponent(query)}`,
-        duration: "7:45",
-        source: "XVideos"
-      }
-    ];
+    const [phResults, xvResults] = await Promise.all([
+      scrapePornhub(query),
+      scrapeXVideos(query)
+    ]);
 
-    res.json({ results: dummyResults });
+    const combinedResults = [...phResults, ...xvResults];
+    res.json({ results: combinedResults });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Search failed." });
@@ -41,3 +32,50 @@ app.get('/search', async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`🧠 GoonerBrain API running on port ${PORT}`));
+
+// Helper functions
+async function scrapePornhub(query) {
+  const url = `https://www.pornhub.com/video/search?search=${encodeURIComponent(query)}`;
+  const { data } = await axios.get(url);
+  const $ = cheerio.load(data);
+  const results = [];
+
+  $('.videoPreviewBg').each((i, el) => {
+    const title = $(el).attr('data-title');
+    const videoUrl = 'https://www.pornhub.com' + $(el).parent().attr('href');
+    const duration = $(el).find('.duration').text().trim();
+    if (title && videoUrl) {
+      results.push({
+        title,
+        url: videoUrl,
+        duration,
+        source: "Pornhub"
+      });
+    }
+  });
+
+  return results;
+}
+
+async function scrapeXVideos(query) {
+  const url = `https://www.xvideos.com/?k=${encodeURIComponent(query)}`;
+  const { data } = await axios.get(url);
+  const $ = cheerio.load(data);
+  const results = [];
+
+  $('.thumb-block').each((i, el) => {
+    const title = $(el).find('.title a').text().trim();
+    const videoUrl = 'https://www.xvideos.com' + $(el).find('.title a').attr('href');
+    const duration = $(el).find('.duration').text().trim();
+    if (title && videoUrl) {
+      results.push({
+        title,
+        url: videoUrl,
+        duration,
+        source: "XVideos"
+      });
+    }
+  });
+
+  return results;
+}
