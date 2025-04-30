@@ -1,28 +1,20 @@
 const axios = require('axios');
-const cheerio = require('cheerio');
+
 module.exports = async function beeg(query) {
-  const results = [];
+  const url = `https://api.beeg.com/api/v6/search/suggestions/${encodeURIComponent(query)}?site=beeg`;
+
   try {
-    const url = "https://example.com/search?q=" + encodeURIComponent(query);
     const { data } = await axios.get(url);
-    const $ = cheerio.load(data);
+    const results = data.suggestions?.map(video => ({
+      title: video.title,
+      url: `https://beeg.com/${video.slug}`,
+      duration: '',
+      source: "Beeg"
+    })) || [];
 
-    // TODO: customize selector for beeg
-
-    $('selector').each((i, el) => {
-      const title = $(el).text().trim();
-      const href = $(el).attr('href');
-      if (title && href) {
-        results.push({
-          title,
-          url: href.startsWith('http') ? href : 'https://example.com' + href,
-          duration: '',
-          source: "beeg"
-        });
-      }
-    });
+    return results;
   } catch (err) {
     console.error("beeg error:", err.message);
+    return [];
   }
-  return results;
 };
