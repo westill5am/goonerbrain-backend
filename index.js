@@ -1,78 +1,47 @@
 const express = require('express');
-const axios = require('axios');
-const cheerio = require('cheerio');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 
-const bannedTerms = ["loli", "rape", "child", "pedo", "incest", "cp", "underage"];
+const bannedTerms = ["loli", "rape", "child", "cp", "underage", "pedo", "incest"];
+const SCRAPER_DIR = path.join(__dirname, 'scrapers');
+
+// Load all scraper modules
+const scrapers = fs.readdirSync(SCRAPER_DIR)
+  .filter(file => file.endsWith('.js'))
+  .map(file => require(path.join(SCRAPER_DIR, file)));
 
 app.get('/search', async (req, res) => {
   const query = req.query.q?.toLowerCase().trim() || "";
 
-  if (!query) {
-    return res.status(400).json({ error: "Missing search query." });
-  }
-
+  if (!query) return res.status(400).json({ error: "Missing search term." });
   if (bannedTerms.some(term => query.includes(term))) {
     return res.status(403).json({ error: "Search term is blocked." });
   }
 
   try {
-    const [ph, sb] = await Promise.all([
-      scrapePornhub(query),
-      scrapeSpankBang(query)
-    ]);
+    const tasks = scrapers.map(scraper => scraper(query));
+    const all = await Promise.allSettled(tasks);
 
-    const merged = [...ph, ...sb].slice(0, 20); // Limit to 20 results
-    res.json({ results: merged });
+    const results = all
+      .filter(r => r.status === 'fulfilled')
+      .flatMap(r => r.value)
+      .filter((v, i, self) =>
+        v && v.url && self.findIndex(x => x.url === v.url) === i
+      );
+
+    res.json({ results: results.slice(0, 40) });
   } catch (err) {
-    console.error("Scraping failed:", err.message);
-    res.status(500).json({ error: "Failed to fetch results." });
+    console.error(err);
+    res.status(500).json({ error: "Search failed." });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ GoonerBrain API running on port ${PORT}`);
+  console.log(`✅ GoonerBrain backend running on port ${PORT}`);
 });
-
-
-// 🔧 Pornhub Scraper
-async function scrapePornhub(query) {
-  const results = [];
-  const res = await axios.get(`https://www.pornhub.com/video/search?search=${encodeURIComponent(query)}`);
-  const $ = cheerio.load(res.data);
-
-  $('.pcVideoListItem').each((i, el) => {
-    const title = $(el).find('.title a').text().trim();
-    const url = 'https://www.pornhub.com' + $(el).find('.title a').attr('href');
-    const duration = $(el).find('.duration').text().trim();
-    if (title && url) {
-      results.push({ title, url, duration, source: "Pornhub" });
-    }
-  });
-
-  return results;
-}
-
-
-// 🔧 SpankBang Scraper
-async function scrapeSpankBang(query) {
-  const results = [];
-  const res = await axios.get(`https://spankbang.party/s/${encodeURIComponent(query)}`);
-  const $ = cheerio.load(res.data);
-
-  $('a.video').each((i, el) => {
-    const title = $(el).find('.title').text().trim();
-    const url = 'https://spankbang.party' + $(el).attr('href');
-    const duration = $(el).find('.duration').text().trim();
-    if (title && url) {
-      results.push({ title, url, duration, source: "SpankBang" });
-    }
-  });
-
-  return results;
-}
