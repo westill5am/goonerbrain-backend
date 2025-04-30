@@ -1,28 +1,37 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+
 module.exports = async function youporn(query) {
+  const url = `https://www.youporn.com/results/?query=${encodeURIComponent(query)}`;
   const results = [];
+
   try {
-    const url = "https://example.com/search?q=" + encodeURIComponent(query);
-    const { data } = await axios.get(url);
+    const { data } = await axios.get(url, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.90 Safari/537.36'
+      }
+    });
+
     const $ = cheerio.load(data);
 
-    // TODO: customize selector for youporn
+    $('div.video-wrapper').each((i, el) => {
+      const title = $(el).find('.video-title a').text().trim();
+      const href = $(el).find('.video-title a').attr('href');
+      const duration = $(el).find('.duration').text().trim();
 
-    $('selector').each((i, el) => {
-      const title = $(el).text().trim();
-      const href = $(el).attr('href');
       if (title && href) {
         results.push({
           title,
-          url: href.startsWith('http') ? href : 'https://example.com' + href,
-          duration: '',
-          source: "youporn"
+          url: 'https://www.youporn.com' + href,
+          duration,
+          source: 'YouPorn'
         });
       }
     });
   } catch (err) {
-    console.error("youporn error:", err.message);
+    console.error('youporn error:', err.message);
   }
+
   return results;
 };
