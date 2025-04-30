@@ -1,0 +1,31 @@
+const axios = require('axios');
+const cheerio = require('cheerio');
+
+module.exports = async function xvideos(query) {
+  const url = `https://www.xvideos.com/?k=${encodeURIComponent(query)}`;
+  const results = [];
+
+  try {
+    const { data } = await axios.get(url);
+    const $ = cheerio.load(data);
+
+    $('.thumb-block').each((i, el) => {
+      const title = $(el).find('.title a').text().trim();
+      const videoUrl = 'https://www.xvideos.com' + $(el).find('.title a').attr('href');
+      const duration = $(el).find('.duration').text().trim();
+
+      if (title && videoUrl) {
+        results.push({
+          title,
+          url: videoUrl,
+          duration,
+          source: "XVideos"
+        });
+      }
+    });
+  } catch (err) {
+    console.error("xvideos error:", err.message);
+  }
+
+  return results;
+};
