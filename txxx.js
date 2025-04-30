@@ -1,31 +1,28 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-
 module.exports = async function txxx(query) {
-  const url = `https://www.txxx.com/search/${encodeURIComponent(query)}/`;
   const results = [];
-
   try {
+    const url = "https://example.com/search?q=" + encodeURIComponent(query);
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
 
-    $('div.video-box').each((i, el) => {
-      const title = $(el).find('.title a').text().trim();
-      const href = $(el).find('a').attr('href');
-      const duration = $(el).find('.duration').text().trim();
+    // TODO: customize selector for txxx
 
+    $('selector').each((i, el) => {
+      const title = $(el).text().trim();
+      const href = $(el).attr('href');
       if (title && href) {
         results.push({
           title,
-          url: 'https://www.txxx.com' + href,
-          duration,
-          source: "TXXX"
+          url: href.startsWith('http') ? href : 'https://example.com' + href,
+          duration: '',
+          source: "txxx"
         });
       }
     });
   } catch (err) {
     console.error("txxx error:", err.message);
   }
-
   return results;
 };

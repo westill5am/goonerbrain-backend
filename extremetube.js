@@ -1,13 +1,13 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-module.exports = async function xhamster(query) {
+module.exports = async function extremetube(query) {
   const results = [];
   try {
     const url = "https://example.com/search?q=" + encodeURIComponent(query);
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
 
-    // TODO: customize selector for xhamster
+    // TODO: customize selector for extremetube
 
     $('selector').each((i, el) => {
       const title = $(el).text().trim();
@@ -17,12 +17,12 @@ module.exports = async function xhamster(query) {
           title,
           url: href.startsWith('http') ? href : 'https://example.com' + href,
           duration: '',
-          source: "xhamster"
+          source: "extremetube"
         });
       }
     });
   } catch (err) {
-    console.error("xhamster error:", err.message);
+    console.error("extremetube error:", err.message);
   }
   return results;
 };

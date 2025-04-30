@@ -1,31 +1,28 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-
 module.exports = async function pornhub(query) {
-  const url = `https://www.pornhub.com/video/search?search=${encodeURIComponent(query)}`;
   const results = [];
-
   try {
+    const url = "https://example.com/search?q=" + encodeURIComponent(query);
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
 
-    $('.pcVideoListItem').each((i, el) => {
-      const title = $(el).find('.title a').text().trim();
-      const videoUrl = 'https://www.pornhub.com' + $(el).find('.title a').attr('href');
-      const duration = $(el).find('.duration').text().trim();
+    // TODO: customize selector for pornhub
 
-      if (title && videoUrl) {
+    $('selector').each((i, el) => {
+      const title = $(el).text().trim();
+      const href = $(el).attr('href');
+      if (title && href) {
         results.push({
           title,
-          url: videoUrl,
-          duration,
-          source: "Pornhub"
+          url: href.startsWith('http') ? href : 'https://example.com' + href,
+          duration: '',
+          source: "pornhub"
         });
       }
     });
   } catch (err) {
     console.error("pornhub error:", err.message);
   }
-
   return results;
 };
