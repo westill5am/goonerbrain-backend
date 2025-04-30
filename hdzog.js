@@ -1,8 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-module.exports = async function drtuber(query) {
-  const url = `https://www.drtuber.com/search/${encodeURIComponent(query)}`;
+module.exports = async function hdzog(query) {
+  const url = `https://www.hdzog.com/search/${encodeURIComponent(query)}/`;
   const results = [];
 
   try {
@@ -17,14 +17,14 @@ module.exports = async function drtuber(query) {
       if (title && href) {
         results.push({
           title: title.trim(),
-          url: 'https://www.drtuber.com' + href,
+          url: 'https://www.hdzog.com' + href,
           duration,
-          source: "DrTuber"
+          source: "HDZog"
         });
       }
     });
   } catch (err) {
-    console.error("drtuber error:", err.message);
+    console.error("hdzog error:", err.message);
   }
 
   return results;

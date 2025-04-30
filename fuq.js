@@ -1,8 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-module.exports = async function drtuber(query) {
-  const url = `https://www.drtuber.com/search/${encodeURIComponent(query)}`;
+module.exports = async function fuq(query) {
+  const url = `https://fuq.com/search/${encodeURIComponent(query)}`;
   const results = [];
 
   try {
@@ -12,19 +12,18 @@ module.exports = async function drtuber(query) {
     $('.thumb').each((i, el) => {
       const title = $(el).find('a').attr('title');
       const href = $(el).find('a').attr('href');
-      const duration = $(el).find('.duration').text().trim();
 
       if (title && href) {
         results.push({
           title: title.trim(),
-          url: 'https://www.drtuber.com' + href,
-          duration,
-          source: "DrTuber"
+          url: 'https://fuq.com' + href,
+          duration: null,
+          source: "Fuq"
         });
       }
     });
   } catch (err) {
-    console.error("drtuber error:", err.message);
+    console.error("fuq error:", err.message);
   }
 
   return results;

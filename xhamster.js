@@ -1,28 +1,31 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+
 module.exports = async function xhamster(query) {
+  const url = `https://xhamster.com/search/${encodeURIComponent(query)}`;
   const results = [];
+
   try {
-    const url = "https://example.com/search?q=" + encodeURIComponent(query);
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
 
-    // TODO: customize selector for xhamster
+    $('article.video-thumb').each((i, el) => {
+      const title = $(el).find('a.video-thumb__title-link').text().trim();
+      const href = $(el).find('a.video-thumb__title-link').attr('href');
+      const duration = $(el).find('.video-thumb__duration').text().trim();
 
-    $('selector').each((i, el) => {
-      const title = $(el).text().trim();
-      const href = $(el).attr('href');
       if (title && href) {
         results.push({
           title,
-          url: href.startsWith('http') ? href : 'https://example.com' + href,
-          duration: '',
-          source: "xhamster"
+          url: 'https://xhamster.com' + href,
+          duration,
+          source: "xHamster"
         });
       }
     });
   } catch (err) {
     console.error("xhamster error:", err.message);
   }
+
   return results;
 };

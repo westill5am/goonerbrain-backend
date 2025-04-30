@@ -1,15 +1,15 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-module.exports = async function spankbang(query) {
-  const url = `https://www.spankbang.com/s/${encodeURIComponent(query)}/1/`;
+module.exports = async function spankbangvr(query) {
+  const url = `https://spankbang.com/s/${encodeURIComponent(query)}/1/?o=vr`;
   const results = [];
 
   try {
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
 
-    $('.video-list > .video-item').each((i, el) => {
+    $('.video-item').each((i, el) => {
       const title = $(el).find('.title').text().trim();
       const href = $(el).find('a').attr('href');
       const duration = $(el).find('.dur').text().trim();
@@ -17,14 +17,14 @@ module.exports = async function spankbang(query) {
       if (title && href) {
         results.push({
           title,
-          url: 'https://www.spankbang.com' + href,
+          url: 'https://spankbang.com' + href,
           duration,
-          source: "SpankBang"
+          source: "SpankBang VR"
         });
       }
     });
   } catch (err) {
-    console.error("spankbang error:", err.message);
+    console.error("spankbangvr error:", err.message);
   }
 
   return results;

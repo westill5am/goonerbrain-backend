@@ -1,28 +1,31 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+
 module.exports = async function fux(query) {
+  const url = `https://www.fux.com/videos/search/${encodeURIComponent(query)}`;
   const results = [];
+
   try {
-    const url = "https://example.com/search?q=" + encodeURIComponent(query);
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
 
-    // TODO: customize selector for fux
+    $('.item-video').each((i, el) => {
+      const title = $(el).find('.title').text().trim();
+      const href = $(el).find('a').attr('href');
+      const duration = $(el).find('.duration').text().trim();
 
-    $('selector').each((i, el) => {
-      const title = $(el).text().trim();
-      const href = $(el).attr('href');
       if (title && href) {
         results.push({
           title,
-          url: href.startsWith('http') ? href : 'https://example.com' + href,
-          duration: '',
-          source: "fux"
+          url: 'https://www.fux.com' + href,
+          duration,
+          source: "Fux"
         });
       }
     });
   } catch (err) {
     console.error("fux error:", err.message);
   }
+
   return results;
 };

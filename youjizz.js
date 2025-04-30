@@ -2,14 +2,14 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 module.exports = async function youjizz(query) {
-  const url = `https://www.youjizz.com/search/${encodeURIComponent(query)}`;
+  const url = `https://www.youjizz.com/search/?query=${encodeURIComponent(query)}`;
   const results = [];
 
   try {
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
 
-    $('.video-box').each((i, el) => {
+    $('.video').each((i, el) => {
       const title = $(el).find('.title').text().trim();
       const href = $(el).find('a').attr('href');
       const duration = $(el).find('.duration').text().trim();

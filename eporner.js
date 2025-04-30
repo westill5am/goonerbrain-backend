@@ -2,17 +2,17 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 module.exports = async function eporner(query) {
-  const url = `https://www.eporner.com/search/?q=${encodeURIComponent(query)}`;
+  const url = `https://www.eporner.com/search/${encodeURIComponent(query)}/`;
   const results = [];
 
   try {
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
 
-    $('.mb').each((i, el) => {
-      const title = $(el).find('a.title').text().trim();
-      const href = $(el).find('a.title').attr('href');
-      const duration = $(el).find('.time').text().trim();
+    $('.mb-3').each((i, el) => {
+      const title = $(el).find('img').attr('alt')?.trim();
+      const href = $(el).find('a').attr('href');
+      const duration = $(el).find('.text-white').text().trim();
 
       if (title && href) {
         results.push({

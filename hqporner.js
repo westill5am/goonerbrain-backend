@@ -2,16 +2,16 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 module.exports = async function hqporner(query) {
-  const url = `https://hqporner.com/search?q=${encodeURIComponent(query)}`;
+  const url = `https://hqporner.com/search/${encodeURIComponent(query)}.html`;
   const results = [];
 
   try {
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
 
-    $('.video-block').each((i, el) => {
-      const title = $(el).find('.caption a').text().trim();
-      const href = $(el).find('.caption a').attr('href');
+    $('.list-video').each((i, el) => {
+      const title = $(el).find('.title a').text().trim();
+      const href = $(el).find('a').attr('href');
       const duration = $(el).find('.duration').text().trim();
 
       if (title && href) {

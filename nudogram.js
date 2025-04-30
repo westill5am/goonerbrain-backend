@@ -1,8 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-module.exports = async function drtuber(query) {
-  const url = `https://www.drtuber.com/search/${encodeURIComponent(query)}`;
+module.exports = async function nudogram(query) {
+  const url = `https://nudogram.com/search/${encodeURIComponent(query)}`;
   const results = [];
 
   try {
@@ -10,21 +10,20 @@ module.exports = async function drtuber(query) {
     const $ = cheerio.load(data);
 
     $('.thumb').each((i, el) => {
-      const title = $(el).find('a').attr('title');
+      const title = $(el).find('img').attr('alt');
       const href = $(el).find('a').attr('href');
-      const duration = $(el).find('.duration').text().trim();
 
       if (title && href) {
         results.push({
           title: title.trim(),
-          url: 'https://www.drtuber.com' + href,
-          duration,
-          source: "DrTuber"
+          url: 'https://nudogram.com' + href,
+          duration: null,
+          source: "Nudogram"
         });
       }
     });
   } catch (err) {
-    console.error("drtuber error:", err.message);
+    console.error("nudogram error:", err.message);
   }
 
   return results;

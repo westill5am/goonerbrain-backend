@@ -1,8 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-module.exports = async function drtuber(query) {
-  const url = `https://www.drtuber.com/search/${encodeURIComponent(query)}`;
+module.exports = async function tubedupe(query) {
+  const url = `https://www.tubedupe.com/search/${encodeURIComponent(query)}`;
   const results = [];
 
   try {
@@ -10,21 +10,21 @@ module.exports = async function drtuber(query) {
     const $ = cheerio.load(data);
 
     $('.thumb').each((i, el) => {
-      const title = $(el).find('a').attr('title');
-      const href = $(el).find('a').attr('href');
+      const title = $(el).find('.title a').text().trim();
+      const href = $(el).find('.title a').attr('href');
       const duration = $(el).find('.duration').text().trim();
 
       if (title && href) {
         results.push({
-          title: title.trim(),
-          url: 'https://www.drtuber.com' + href,
+          title,
+          url: 'https://www.tubedupe.com' + href,
           duration,
-          source: "DrTuber"
+          source: "TubeDupe"
         });
       }
     });
   } catch (err) {
-    console.error("drtuber error:", err.message);
+    console.error("tubedupe error:", err.message);
   }
 
   return results;

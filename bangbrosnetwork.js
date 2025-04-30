@@ -1,8 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-module.exports = async function pinkrod(query) {
-  const url = `https://www.pinkrod.com/search/${encodeURIComponent(query)}/`;
+module.exports = async function bangbrosnetwork(query) {
+  const url = `https://bangbrosnetwork.com/video/search/${encodeURIComponent(query)}`;
   const results = [];
 
   try {
@@ -10,20 +10,20 @@ module.exports = async function pinkrod(query) {
     const $ = cheerio.load(data);
 
     $('.item').each((i, el) => {
-      const title = $(el).find('a').attr('title');
+      const title = $(el).find('.title').text().trim();
       const href = $(el).find('a').attr('href');
 
       if (title && href) {
         results.push({
-          title: title.trim(),
-          url: 'https://www.pinkrod.com' + href,
+          title,
+          url: 'https://bangbrosnetwork.com' + href,
           duration: null,
-          source: "PinkRod"
+          source: "BangBrosNetwork"
         });
       }
     });
   } catch (err) {
-    console.error("pinkrod error:", err.message);
+    console.error("bangbrosnetwork error:", err.message);
   }
 
   return results;

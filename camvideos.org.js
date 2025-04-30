@@ -1,8 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-module.exports = async function beeg(query) {
-  const url = `https://beeg.com/search?q=${encodeURIComponent(query)}`;
+module.exports = async function camvideos(query) {
+  const url = `https://camvideos.org/?s=${encodeURIComponent(query)}`;
   const results = [];
 
   try {
@@ -10,20 +10,20 @@ module.exports = async function beeg(query) {
     const $ = cheerio.load(data);
 
     $('article').each((i, el) => {
-      const title = $(el).find('.video-title').text().trim();
-      const href = $(el).find('a').attr('href');
+      const title = $(el).find('h2 a').text().trim();
+      const href = $(el).find('h2 a').attr('href');
 
       if (title && href) {
         results.push({
           title,
-          url: 'https://beeg.com' + href,
+          url: href,
           duration: null,
-          source: "Beeg"
+          source: "CamVideos"
         });
       }
     });
   } catch (err) {
-    console.error("beeg error:", err.message);
+    console.error("camvideos error:", err.message);
   }
 
   return results;
