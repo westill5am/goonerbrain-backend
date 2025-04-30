@@ -1,28 +1,31 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+
 module.exports = async function youjizz(query) {
+  const url = `https://www.youjizz.com/search/${encodeURIComponent(query)}`;
   const results = [];
+
   try {
-    const url = "https://example.com/search?q=" + encodeURIComponent(query);
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
 
-    // TODO: customize selector for youjizz
+    $('.video-box').each((i, el) => {
+      const title = $(el).find('.title').text().trim();
+      const href = $(el).find('a').attr('href');
+      const duration = $(el).find('.duration').text().trim();
 
-    $('selector').each((i, el) => {
-      const title = $(el).text().trim();
-      const href = $(el).attr('href');
       if (title && href) {
         results.push({
           title,
-          url: href.startsWith('http') ? href : 'https://example.com' + href,
-          duration: '',
-          source: "youjizz"
+          url: 'https://www.youjizz.com' + href,
+          duration,
+          source: "YouJizz"
         });
       }
     });
   } catch (err) {
     console.error("youjizz error:", err.message);
   }
+
   return results;
 };
