@@ -3,32 +3,28 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# ✅ Allow frontend to access the backend
+# ✅ Enable CORS so frontend can call API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production: ["https://goonerbrain.vercel.app"]
+    allow_origins=["*"],  # In production: use your frontend URL only
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ✅ Root endpoint (test if backend works at all)
+# ✅ Root test route
 @app.get("/")
 def root():
-    return {"message": "GoonerBrain API is running."}
+    return {"message": "GoonerBrain API is live."}
 
-# ✅ Search endpoint that the frontend needs
+# ✅ Working search route
 @app.get("/search")
 async def search(q: str = Query(...)):
-    if not q:
-        return {"results": []}
-    
-    # Placeholder search logic (add real scraping later)
     return {
         "results": [
             {
-                "title": f"Fake video for '{q}'",
-                "thumb": "https://placehold.co/400x200?text=Preview",
+                "title": f"Fake result for '{q}'",
+                "thumb": "https://placehold.co/400x225?text=Preview",
                 "link": "https://example.com/fake"
             }
         ]
