@@ -1,35 +1,35 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List
-import asyncio
 
 app = FastAPI()
 
-# ✅ CORS setup
+# ✅ Allow frontend to access the backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can restrict this in production
+    allow_origins=["*"],  # In production: ["https://goonerbrain.vercel.app"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ✅ Root test route
+# ✅ Root endpoint (test if backend works at all)
 @app.get("/")
-def read_root():
-    return {"message": "GoonerBrain API is running!"}
+def root():
+    return {"message": "GoonerBrain API is running."}
 
-# ✅ Search endpoint
+# ✅ Search endpoint that the frontend needs
 @app.get("/search")
-async def search(q: str = Query(..., description="Your porn search query")):
-    # placeholder logic – replace this with your real scraping pool
+async def search(q: str = Query(...)):
+    if not q:
+        return {"results": []}
+    
+    # Placeholder search logic (add real scraping later)
     return {
-        "query": q,
         "results": [
             {
-                "title": f"Example result for '{q}'",
-                "thumb": "https://example.com/thumb.jpg",
-                "link": "https://example.com/video"
+                "title": f"Fake video for '{q}'",
+                "thumb": "https://placehold.co/400x200?text=Preview",
+                "link": "https://example.com/fake"
             }
         ]
     }
