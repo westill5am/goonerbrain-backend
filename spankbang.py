@@ -1,33 +1,29 @@
-import httpx
+# spankbang.py
+import aiohttp
 from bs4 import BeautifulSoup
 
-async def scrape_spankbang(query: str):
-    url = f"https://spankbang.party/s/{query}"
-    results = []
-
+async def scrape_spankbang(query):
+    search_url = f"https://spankbang.com/s/{query.replace(' ', '+')}/1/"
     headers = {
         "User-Agent": "Mozilla/5.0"
     }
-
-    async with httpx.AsyncClient() as client:
-        r = await client.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(r.text, "html.parser")
-        for a in soup.select("div.video-list > a"):
-            href = a.get("href")
-            title = a.select_one(".title")
-            duration = a.select_one(".dur")
-            img = a.find("img")
-
-            if not href or not title or not img:
-                continue
-
-            preview = img.get("data-src") or img.get("src") or ""
-            results.append({
-                "title": title.text.strip(),
-                "url": f"https://spankbang.party{href}",
-                "preview": preview if preview.startswith("http") else f"https:{preview}",
-                "duration": duration.text.strip() if duration else "N/A",
-                "source": "SpankBang"
-            })
-
-    return results
+    async with aiohttp.ClientSession() as session:
+        async with session.get(search_url, headers=headers) as response:
+            if response.status != 200:
+                return []
+            html = await response.text()
+            soup = BeautifulSoup(html, "html.parser")
+            results = []
+            for video in soup.select(".video-item"):
+                title_tag = video.select_one(".title")
+                if not title_tag:
+                    continue
+                title = title_tag.get_text(strip=True)
+                href = video.get("href")
+                preview = video.select_one("img")["src"] if video.select_one("img") else ""
+                results.append({
+                    "title": title,
+                    "url": f"https://spankbang.com{href}",
+                    "preview": preview
+                })
+            return results
