@@ -5,76 +5,70 @@
   <title>GoonerBrain Search</title>
   <style>
     body {
-      background: #0d0d0d;
-      color: white;
       font-family: sans-serif;
-      text-align: center;
-      padding: 40px;
+      background: #0d0d0d;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
     }
-    input[type="text"] {
+    h1 {
+      color: #fff;
+    }
+    input, button {
       padding: 10px;
-      width: 300px;
-      font-size: 1em;
-      border-radius: 5px;
-      border: none;
-    }
-    button {
-      padding: 10px 20px;
-      background-color: #ff4c91;
-      color: white;
-      font-size: 1em;
-      border: none;
-      border-radius: 5px;
-      margin-left: 10px;
-      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.5rem;
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-      margin-top: 40px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+      width: 100%;
+      max-width: 1200px;
     }
     .card {
-      background: #1a1a1a;
-      padding: 10px;
+      background: #1c1c1c;
+      padding: 1rem;
       border-radius: 8px;
-      text-align: left;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 10px rgba(255, 0, 128, 0.2);
     }
-    .card img, .card video {
+    video, img {
       width: 100%;
-      border-radius: 5px;
+      border-radius: 6px;
+    }
+    h3 {
+      font-size: 1rem;
+      margin: 0.5rem 0 0.2rem;
     }
     .source {
-      font-size: 0.85em;
-      color: #aaa;
-      margin-top: 6px;
-    }
-    h1 {
-      font-size: 2em;
-      margin-bottom: 20px;
+      font-size: 0.8rem;
+      color: #ccc;
     }
   </style>
 </head>
 <body>
   <h1>🔍 GoonerBrain Search</h1>
-  <input id="query" type="text" placeholder="Search something..." />
+  <input id="query" type="text" placeholder="Search..." />
   <button onclick="doSearch()">Search</button>
 
   <div id="output" class="grid"></div>
 
   <script>
     async function doSearch() {
-      const q = document.getElementById('query').value;
+      const q = document.getElementById('query').value.trim();
       const out = document.getElementById('output');
-      out.innerHTML = '⏳ Searching...';
+      if (!q) return;
+      out.innerHTML = `<p>🔍 Searching <b>${q}</b>...</p>`;
 
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
 
         if (!Array.isArray(data) || data.length === 0) {
-          out.innerHTML = '<p>⚠️ No results found.</p>';
+          out.innerHTML = `<p>⚠️ No results found.</p>`;
           return;
         }
 
@@ -83,10 +77,9 @@
           return `
             <div class="card">
               <a href="${video.url}" target="_blank">
-                ${
-                  isVideo
-                    ? `<video src="${video.preview}" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>`
-                    : `<img src="${video.preview || 'https://via.placeholder.com/300x160?text=No+Preview'}" alt="${video.title}" />`
+                ${isVideo
+                  ? `<video src="${video.preview}" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>`
+                  : `<img src="${video.preview || 'https://via.placeholder.com/300x160?text=No+Preview'}" alt="${video.title}">`
                 }
               </a>
               <h3>${video.title}</h3>
