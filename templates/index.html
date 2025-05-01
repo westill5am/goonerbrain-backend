@@ -1,0 +1,60 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GoonerBrain</title>
+    <style>
+        body { font-family: sans-serif; background: #111; color: #eee; margin: 0; padding: 1em; }
+        #search { width: 100%; padding: 0.5em; font-size: 1.2em; margin-bottom: 1em; }
+        #results { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1em; }
+        .card { background: #222; padding: 1em; border-radius: 8px; }
+        .card video, .card img { width: 100%; height: auto; border-radius: 4px; }
+        .card h3 { margin: 0.5em 0 0; font-size: 1em; }
+    </style>
+</head>
+<body>
+    <input id="search" placeholder="Search..." autofocus />
+    <div id="results"></div>
+    <script>
+        const input = document.getElementById('search');
+        const results = document.getElementById('results');
+
+        input.addEventListener('keydown', async (e) => {
+            if (e.key === 'Enter') {
+                const query = input.value.trim();
+                if (!query) return;
+                results.innerHTML = '<p>Searching...</p>';
+                try {
+                    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+                    if (data.error) {
+                        results.innerHTML = `<p>Error: ${data.error}</p>`;
+                        return;
+                    }
+                    if (!data.length) {
+                        results.innerHTML = '<p>No results found.</p>';
+                        return;
+                    }
+                    results.innerHTML = data.map(video => {
+                        const isMP4 = video.preview && video.preview.endsWith('.mp4');
+                        const media = isMP4
+                            ? `<video src="${video.preview}" muted autoplay loop playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>`
+                            : `<img src="${video.preview || 'https://via.placeholder.com/300x160?text=No+Preview'}" alt="${video.title}">`;
+                        return `
+                            <div class="card">
+                                <a href="${video.url}" target="_blank">
+                                    ${media}
+                                    <h3>${video.title}</h3>
+                                </a>
+                            </div>
+                        `;
+                    }).join('');
+                } catch (err) {
+                    results.innerHTML = `<p>Error: ${err.message}</p>`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
