@@ -1,21 +1,24 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import uvicorn
 import os
 
-app = FastAPI(title="Casting Couch API", version="1.0.0")
+app = FastAPI()
 
-# Essential for Render health checks
-@app.get("/", include_in_schema=False)
-def health_check():
-    return {"status": "active"}
+# Essential health check endpoint
+@app.get("/", tags=["health"])
+def root():
+    return JSONResponse(
+        content={"status": "active", "service": "Casting Couch API"},
+        status_code=200
+    )
 
-# Add your actual endpoints here
+# Add your actual search endpoint
 @app.get("/search")
-async def search_query(q: str):
-    # Your search logic here
-    return {"results": []}
+async def search_japanese_uncensored(query: str):
+    # Implement your search logic here
+    return {"query": query, "results": []}
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+    port = int(os.getenv("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
