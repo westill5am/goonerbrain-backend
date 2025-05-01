@@ -1,31 +1,39 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-module.exports = async function spankbang(query) {
-  const url = `https://www.spankbang.com/s/${encodeURIComponent(query)}/1/`;
+module.exports = async function(query) {
+  const url = `https://spankbang.party/s/${encodeURIComponent(query)}`;
   const results = [];
 
   try {
-    const { data } = await axios.get(url);
+    const { data } = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0'
+      }
+    });
+
     const $ = cheerio.load(data);
 
-    $('.video-list > .video-item').each((i, el) => {
+    $('div.video-list > a').each((_, el) => {
+      const href = $(el).attr('href');
       const title = $(el).find('.title').text().trim();
-      const href = $(el).find('a').attr('href');
+      const preview = $(el).find('img').attr('data-src') || $(el).find('img').attr('src');
       const duration = $(el).find('.dur').text().trim();
 
-      if (title && href) {
+      if (href && title && preview) {
         results.push({
           title,
-          url: 'https://www.spankbang.com' + href,
+          url: `https://spankbang.party${href}`,
+          preview: preview.startsWith('http') ? preview : `https:${preview}`,
           duration,
-          source: "SpankBang"
+          source: 'SpankBang'
         });
       }
     });
-  } catch (err) {
-    console.error("spankbang error:", err.message);
-  }
 
-  return results;
+    return results;
+  } catch (err) {
+    console.error('❌ SpankBang scraper error:', err.message);
+    return [];
+  }
 };
