@@ -1,24 +1,35 @@
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-import uvicorn
-import os
+from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
+from typing import List
+import asyncio
 
 app = FastAPI()
 
-# Essential health check endpoint
-@app.get("/", tags=["health"])
-def root():
-    return JSONResponse(
-        content={"status": "active", "service": "Casting Couch API"},
-        status_code=200
-    )
+# ✅ CORS setup
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # You can restrict this in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Add your actual search endpoint
+# ✅ Root test route
+@app.get("/")
+def read_root():
+    return {"message": "GoonerBrain API is running!"}
+
+# ✅ Search endpoint
 @app.get("/search")
-async def search_japanese_uncensored(query: str):
-    # Implement your search logic here
-    return {"query": query, "results": []}
-
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", 10000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+async def search(q: str = Query(..., description="Your porn search query")):
+    # placeholder logic – replace this with your real scraping pool
+    return {
+        "query": q,
+        "results": [
+            {
+                "title": f"Example result for '{q}'",
+                "thumb": "https://example.com/thumb.jpg",
+                "link": "https://example.com/video"
+            }
+        ]
+    }
