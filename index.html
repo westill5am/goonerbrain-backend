@@ -65,6 +65,7 @@
 
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
         const data = await res.json();
 
         if (!Array.isArray(data) || data.length === 0) {
