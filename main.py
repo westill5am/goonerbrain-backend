@@ -1,7 +1,7 @@
+# main.py
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List
-from spankbang import scrape_spankbang  # Ensure this module is correctly implemented
+from spankbang import scrape_spankbang
 
 app = FastAPI()
 
