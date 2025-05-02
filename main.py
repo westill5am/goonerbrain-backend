@@ -1,31 +1,22 @@
 from fastapi import FastAPI, Query
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+import scraper  # your custom module
+import uvicorn
 
 app = FastAPI()
 
-# ✅ Enable CORS so frontend can call API
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # In production: use your frontend URL only
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# ✅ Root test route
 @app.get("/")
-def root():
-    return {"message": "GoonerBrain API is live."}
+def read_root():
+    return {"status": "OK", "message": "Backend is running!"}
 
-# ✅ Working search route
 @app.get("/search")
-async def search(q: str = Query(...)):
-    return {
-        "results": [
-            {
-                "title": f"Fake result for '{q}'",
-                "thumb": "https://placehold.co/400x225?text=Preview",
-                "link": "https://example.com/fake"
-            }
-        ]
-    }
+async def search(query: str = Query(..., min_length=1)):
+    try:
+        results = scraper.search_sites(query)
+        return JSONResponse(content={"results": results})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+# Uncomment this if running manually (not needed on Render)
+# if __name__ == "__main__":
+#     uvicorn.run(app, host="0.0.0.0", port=10000)
