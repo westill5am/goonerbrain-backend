@@ -4,6 +4,8 @@ from .pornhub import scrape_pornhub
 from .xvideos import scrape_xvideos
 from .redgifs import scrape_redgifs
 from .spankbang import scrape_spankbang
+from .eporner import scrape_eporner
+from .txxx import scrape_txxx
 
 # Add more as modules are created
 
@@ -14,6 +16,8 @@ def scrape_all_sites(query):
         scrape_xvideos,
         scrape_redgifs,
         scrape_spankbang,
+        scrape_eporner,
+        scrape_txxx,
         # Add more scrapers here
     ]:
         try:
