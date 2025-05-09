@@ -6,3 +6,8 @@ aiohttp==3.9.5
 python-multipart==0.0.9
 pydantic==2.11.4
 jinja2
+redgifs==1.0.5
+spankbang-api==1.0.3
+requests==2.32.3
+beautifulsoup4==4.13.4
+aiohttp==3.9.5
