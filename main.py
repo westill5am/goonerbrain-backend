@@ -6,7 +6,7 @@ from scraper import scrape_sites
 
 app = FastAPI()
 
-# ✅ CORS fix
+# CORS setup fixed for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://goonerbrain.com"],
