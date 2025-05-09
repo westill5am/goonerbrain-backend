@@ -1,7 +1,7 @@
-import asyncio
+import requests
+from bs4 import BeautifulSoup
 
-# Fake placeholder scrapers — replace these with your real modules later
-async def pornhub_scrape(query):
+def scrape_ph(query):
     return [{
         "title": f"Pornhub Result for '{query}'",
         "url": "https://pornhub.com",
@@ -9,7 +9,7 @@ async def pornhub_scrape(query):
         "source": "Pornhub"
     }]
 
-async def xvideos_scrape(query):
+def scrape_xv(query):
     return [{
         "title": f"Xvideos Result for '{query}'",
         "url": "https://xvideos.com",
@@ -17,15 +17,38 @@ async def xvideos_scrape(query):
         "source": "Xvideos"
     }]
 
-async def scrape_sites(query: str):
-    tasks = [
-        pornhub_scrape(query),
-        xvideos_scrape(query)
-    ]
-    results = await asyncio.gather(*tasks, return_exceptions=True)
+def scrape_spankbang(query):
+    try:
+        from spankbang_api import SpankBang
+        sb = SpankBang()
+        results = sb.search(query)
+        return [{
+            "title": v.title,
+            "url": v.url,
+            "preview": v.thumbnail,
+            "source": "SpankBang"
+        } for v in results[:5]]
+    except Exception as e:
+        return [{"title": "SpankBang Error", "url": "", "preview": "", "source": str(e)}]
 
-    final_results = []
-    for result in results:
-        if isinstance(result, list):
-            final_results.extend(result)
-    return final_results
+def scrape_redgifs(query):
+    try:
+        from redgifs import RedGifs
+        rg = RedGifs()
+        results = rg.search_gifs(query)
+        return [{
+            "title": gif.title or f"RedGIF: {query}",
+            "url": gif.url,
+            "preview": gif.preview_url or gif.thumbnail_url,
+            "source": "RedGIFs"
+        } for gif in results[:5]]
+    except Exception as e:
+        return [{"title": "RedGIFs Error", "url": "", "preview": "", "source": str(e)}]
+
+def scrape_all_sites(query):
+    return (
+        scrape_ph(query) +
+        scrape_xv(query) +
+        scrape_spankbang(query) +
+        scrape_redgifs(query)
+    )
