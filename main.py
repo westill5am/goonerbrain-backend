@@ -1,20 +1,30 @@
-from fastapi import FastAPI, Query
-from fastapi.responses import JSONResponse
-import scraper
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
+from scraper import scrape_sites
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"status": "OK", "message": "Backend is running"}
+# ✅ CORS fix
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://goonerbrain.com"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/search")
-async def search(query: str = Query(..., min_length=1)):
-    print(f"🚨 Search called with query: {query}")
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/api/search")
+async def search(q: str):
     try:
-        results = scraper.search_sites(query)
-        print(f"✅ Returning {len(results)} results")
-        return JSONResponse(content={"results": results})
+        results = await scrape_sites(q)
+        return results
     except Exception as e:
-        print(f"❌ Error: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return {"error": str(e)}
