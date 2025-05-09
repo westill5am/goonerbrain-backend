@@ -5,3 +5,4 @@ beautifulsoup4==4.13.4
 aiohttp==3.9.5
 python-multipart==0.0.9
 pydantic==2.11.4
+jinja2
