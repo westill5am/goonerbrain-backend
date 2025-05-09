@@ -1,16 +1,15 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from scraper import scrape_sites
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
-templates = Jinja2Templates(directory="templates")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or restrict to your frontend domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request, query: str = None):
-    results = await scrape_sites(query) if query else []
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "query": query,
-        "results": results
-    })
+@app.get("/api/search")
+async def search_api(q: str):
+    from scraper import scrape_sites
+    results = await scrape_sites(q)
+    return results
