@@ -2,7 +2,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-def scrape_xvideos(query, max_pages=50):
+def scrape_milfzr(query, max_pages=50):
     results = []
     headers = {'User-Agent': 'Mozilla/5.0'}
 
@@ -27,7 +27,7 @@ def scrape_xvideos(query, max_pages=50):
                 "title": title,
                 "url": video_url,
                 "preview": preview,
-                "source": "xvideos"
+                "source": "milfzr"
             })
 
     return results
