@@ -1,26 +1,35 @@
+
 import requests
 from bs4 import BeautifulSoup
 
-def scrape_beeg(query):
+def scrape_beeg(query, max_pages=50):
     results = []
-    url = f"https://beeg.com/search/{query}"
     headers = {'User-Agent': 'Mozilla/5.0'}
 
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.content, 'html.parser')
+    for page in range(1, max_pages + 1):
+        # TODO: Update URL and parsing logic for site
+        url = f"https://example.com/search?q={query}&page={page}"
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            break
 
-    videos = soup.select('.video-thumb')
+        soup = BeautifulSoup(response.content, 'html.parser')
+        videos = soup.select('PLACEHOLDER_SELECTOR')
 
-    for video in videos[:10]:
-        title = video.get('title', 'No title')
-        video_url = "https://beeg.com" + video.get('href')
-        preview_img = video.select_one('img')['data-src']
+        if not videos:
+            break
 
-        results.append({
-            "title": title,
-            "url": video_url,
-            "preview": preview_img,
-            "source": "beeg"
-        })
+        for video in videos:
+            # Extract proper title, url, and video preview
+            title = "PLACEHOLDER"
+            video_url = "https://example.com/PLACEHOLDER"
+            preview = "https://example.com/preview.mp4"
+
+            results.append({
+                "title": title,
+                "url": video_url,
+                "preview": preview,
+                "source": "beeg"
+            })
 
     return results
