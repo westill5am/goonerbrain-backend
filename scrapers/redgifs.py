@@ -1,33 +1,34 @@
 
 import requests
-from bs4 import BeautifulSoup
 
-def scrape_redgifs(query, max_pages=50):
+def scrape_redgifs(query, max_pages=10):
     results = []
-    headers = {'User-Agent': 'Mozilla/5.0'}
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://www.redgifs.com/",
+        "Accept": "application/json"
+    }
 
     for page in range(1, max_pages + 1):
-        url = f"https://example.com/search?q={query}&page={page}"
+        url = f"https://api.redgifs.com/v2/gifs/search?search_text={query}&count=20&page={page}"
         response = requests.get(url, headers=headers)
         if response.status_code != 200:
             break
 
-        soup = BeautifulSoup(response.content, 'html.parser')
-        videos = soup.select('div.video')  # placeholder
+        data = response.json().get("gifs", [])
+        for item in data:
+            try:
+                title = item["title"]
+                video_url = "https://redgifs.com/watch/" + item["id"]
+                preview = item["urls"]["poster"]
 
-        if not videos:
-            break
-
-        for video in videos:
-            title = "Sample Title"
-            video_url = "https://example.com/sample"
-            preview = "https://via.placeholder.com/300x160.mp4"
-
-            results.append({
-                "title": title,
-                "url": video_url,
-                "preview": preview,
-                "source": "redgifs"
-            })
+                results.append({
+                    "title": title,
+                    "url": video_url,
+                    "preview": preview,
+                    "source": "redgifs"
+                })
+            except:
+                continue
 
     return results

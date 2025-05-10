@@ -2,32 +2,33 @@
 import requests
 from bs4 import BeautifulSoup
 
-def scrape_txxx(query, max_pages=50):
+def scrape_txxx(query, max_pages=10):
     results = []
     headers = {'User-Agent': 'Mozilla/5.0'}
 
     for page in range(1, max_pages + 1):
-        url = f"https://example.com/search?q={query}&page={page}"
+        url = f"https://www.txxx.com/search/{query}/{page}/"
         response = requests.get(url, headers=headers)
         if response.status_code != 200:
             break
 
         soup = BeautifulSoup(response.content, 'html.parser')
-        videos = soup.select('div.video')  # placeholder
-
-        if not videos:
-            break
+        videos = soup.select('.video')
 
         for video in videos:
-            title = "Sample Title"
-            video_url = "https://example.com/sample"
-            preview = "https://via.placeholder.com/300x160.mp4"
+            try:
+                a = video.select_one('a')
+                title = a['title']
+                video_url = "https://www.txxx.com" + a['href']
+                preview = video.select_one('img')['data-src']
 
-            results.append({
-                "title": title,
-                "url": video_url,
-                "preview": preview,
-                "source": "txxx"
-            })
+                results.append({
+                    "title": title,
+                    "url": video_url,
+                    "preview": preview,
+                    "source": "txxx"
+                })
+            except:
+                continue
 
     return results

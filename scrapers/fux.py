@@ -7,21 +7,23 @@ def scrape_fux(query, max_pages=50):
     headers = {'User-Agent': 'Mozilla/5.0'}
 
     for page in range(1, max_pages + 1):
+        # TODO: Update URL and parsing logic for site
         url = f"https://example.com/search?q={query}&page={page}"
         response = requests.get(url, headers=headers)
         if response.status_code != 200:
             break
 
         soup = BeautifulSoup(response.content, 'html.parser')
-        videos = soup.select('div.video')  # placeholder
+        videos = soup.select('PLACEHOLDER_SELECTOR')
 
         if not videos:
             break
 
         for video in videos:
-            title = "Sample Title"
-            video_url = "https://example.com/sample"
-            preview = "https://via.placeholder.com/300x160.mp4"
+            # Extract proper title, url, and video preview
+            title = "PLACEHOLDER"
+            video_url = "https://example.com/PLACEHOLDER"
+            preview = "https://example.com/preview.mp4"
 
             results.append({
                 "title": title,
