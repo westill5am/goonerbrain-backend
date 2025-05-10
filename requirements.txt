@@ -3,4 +3,4 @@ uvicorn==0.29.0
 requests==2.32.3
 beautifulsoup4==4.13.4
 aiohttp==3.9.5
-pydantic==1.10.15 
+pydantic==1.10.15
