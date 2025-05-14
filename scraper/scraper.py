@@ -1,31 +1,12 @@
-import asyncio
+from scrapers.pornhub import scrape_pornhub
+from scrapers.xvideos import scrape_xvideos
+from scrapers.redgifs import scrape_redgifs
+# Add as needed...
 
-# placeholder scrapers - replace these with your actual scraper logic later
-async def pornhub_scrape(query):
-    return [{
-        "title": f"Pornhub Result for {query}",
-        "url": "https://pornhub.com",
-        "preview": "",
-        "source": "Pornhub"
-    }]
-
-async def xvideos_scrape(query):
-    return [{
-        "title": f"Xvideos Result for {query}",
-        "url": "https://xvideos.com",
-        "preview": "",
-        "source": "Xvideos"
-    }]
-
-async def scrape_sites(query: str):
-    tasks = [
-        pornhub_scrape(query),
-        xvideos_scrape(query)
-    ]
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-
-    final_results = []
-    for result in results:
-        if isinstance(result, list):
-            final_results.extend(result)
-    return final_results
+def scrape_all_sites(query):
+    return (
+        scrape_pornhub(query) +
+        scrape_xvideos(query) +
+        scrape_redgifs(query)
+        # Add more here
+    )
