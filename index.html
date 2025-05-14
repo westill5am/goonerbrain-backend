@@ -2,8 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>GoonerBrain Meta Search</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GoonerBrain Meta Search</title>
+  <meta name="description" content="Search across top adult sites instantly. GoonerBrain is the ultimate NSFW video search tool." />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="GoonerBrain Meta Search">
+  <meta property="og:description" content="Search across top adult sites instantly. GoonerBrain is the ultimate NSFW video search tool.">
+  <meta property="og:image" content="https://goonerbrain.com/og-image.jpg">
+  <meta property="og:url" content="https://goonerbrain.com">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="GoonerBrain Meta Search">
+  <meta name="twitter:description" content="Search across top adult sites instantly.">
+  <meta name="twitter:image" content="https://goonerbrain.com/og-image.jpg">
+
+  <link rel="icon" href="/favicon.ico" />
+
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
@@ -16,7 +33,7 @@
     input[type="text"] {
       padding: 10px;
       font-size: 1.2em;
-      width: 90%;
+      width: 100%;
       max-width: 500px;
       border-radius: 8px;
       border: none;
@@ -52,66 +69,80 @@
       font-size: 0.85em;
       color: #aaa;
     }
+    @media (max-width: 500px) {
+      body {
+        padding: 20px 10px;
+      }
+      input[type="text"] {
+        font-size: 1em;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
   <h1 style="color:hotpink;">GoonerBrain Meta Search</h1>
-  <input id="search" type="text" placeholder="Search..." autocomplete="off" />
+  <form onsubmit="event.preventDefault(); doSearch();">
+    <input id="search" type="text" placeholder="Search..." autocomplete="off" />
+  </form>
   <div id="results"></div>
 
+  <p style="margin-top: 20px;">
+    <a href="https://ko-fi.com/yourname" target="_blank" style="color:hotpink;">💖 Support This Project</a>
+  </p>
+
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
+    async function doSearch() {
       const input = document.getElementById("search");
+      const q = input.value.trim();
+      const out = document.getElementById("results");
+      if (!q) return;
 
-      input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") doSearch();
-      });
+      out.innerHTML = `<p>Searching for <b>${q}</b>...</p>`;
+      try {
+        const backend = location.hostname.includes("goonerbrain")
+          ? "https://goonerbrain.com"
+          : "http://localhost:8000";
 
-      async function doSearch() {
-        const q = input.value.trim();
-        const out = document.getElementById("results");
-        if (!q) return;
+        const res = await fetch(`${backend}/search?query=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        console.log("📦 RAW RESPONSE:", data);
 
-        out.innerHTML = `<p>Searching for <b>${q}</b>...</p>`;
-        try {
-const res = await fetch(`https://goonerbrain-backend.onrender.com/search?query=${encodeURIComponent(q)}`);
-          const data = await res.json();
-          console.log("📦 RAW RESPONSE:", data);
-
-          const results = data.results || [];
-          if (!results.length) {
-            out.innerHTML = `<p>No results found.</p>`;
-            return;
-          }
-
-          out.innerHTML = `<div class="grid">` + results.map(v => {
-            const preview = v.preview && v.preview.trim() !== "" 
-              ? v.preview 
-              : `https://via.placeholder.com/300x160?text=${encodeURIComponent(v.source + " " + q)}`;
-            const isVideo = /\.(mp4|webm)$/i.test(preview);
-            return `
-              <div class="card">
-                <a href="${v.url}" target="_blank">
-                  ${isVideo
-                    ? `<video src="${preview}" muted loop preload="none"
-                        onmouseover="this.play()" 
-                        onmouseout="this.pause(); this.currentTime = 0;">
-                        <source src="${preview}" type="video/mp4" />
-                     </video>`
-                    : `<img src="${preview}" alt="${v.title}" />`
-                  }
-                </a>
-                <h3>${v.title}</h3>
-                <div class="source">📺 ${v.source}</div>
-              </div>
-            `;
-          }).join('') + `</div>`;
-        } catch (e) {
-          console.error("❌ Fetch error:", e);
-          out.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+        const results = data.results || [];
+        if (!results.length) {
+          out.innerHTML = `<p>No results found.</p>`;
+          return;
         }
+
+        out.innerHTML = `<div class="grid">` + results.map(v => {
+          const preview = v.preview && v.preview.trim() !== ""
+            ? v.preview
+            : `https://via.placeholder.com/300x160?text=${encodeURIComponent(v.source + " " + q)}`;
+          const isVideo = /\.(mp4|webm)$/i.test(preview);
+          return `
+            <div class="card">
+              <a href="${v.url}" target="_blank">
+                ${isVideo
+                  ? `<video src="${preview}" muted loop preload="none"
+                      onmouseover="this.play()" 
+                      onmouseout="this.pause(); this.currentTime = 0;">
+                      <source src="${preview}" type="video/mp4" />
+                   </video>`
+                  : `<img src="${preview}" alt="${v.title}" />`
+                }
+              </a>
+              <h3>${v.title}</h3>
+              <div class="source">📺 ${v.source}</div>
+            </div>
+          `;
+        }).join('') + `</div>`;
+      } catch (e) {
+        console.error("❌ Fetch error:", e);
+        out.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
       }
-    });
+    }
   </script>
 </body>
 </html>
