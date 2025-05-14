@@ -25,8 +25,7 @@ async def root(request: Request):
 async def search(query: str = Query(...)):
     print(f"\n🔍 Received query: {query}")
     results = scrape_all_sites(query)
-    print(f"📦 scrape_all_sites returned: {results}\n")
+    print("📦 scrape_all_sites returned:")
+    for item in results:
+        print(f" - {item['source']}: {item['preview']}")
     return {"results": results}
-print("Preview fields returned:")
-for item in results:
-    print(f" - {item['source']}: {item['preview']}")
