@@ -1,10 +1,27 @@
 def scrape_all_sites(query):
     return [
         {
-            "title": f"Test Match: {query} #{i+1}",
-            "url": f"https://example.com/watch?id={i}",
-            "preview": f"https://via.placeholder.com/300x160?text={query}+{i+1}",
-            "source": "mock"
+            "title": f"Pornhub Result for '{query}'",
+            "url": "https://pornhub.com",
+            "preview": f"https://via.placeholder.com/300x160?text=Pornhub+{query}",
+            "source": "Pornhub"
+        },
+        {
+            "title": f"Xvideos Result for '{query}'",
+            "url": "https://xvideos.com",
+            "preview": f"https://via.placeholder.com/300x160?text=Xvideos+{query}",
+            "source": "Xvideos"
+        },
+        {
+            "title": f"SpankBang Result for '{query}'",
+            "url": "https://spankbang.com",
+            "preview": f"https://via.placeholder.com/300x160?text=SpankBang+{query}",
+            "source": "SpankBang"
+        },
+        {
+            "title": f"RedGIFs Result for '{query}'",
+            "url": "https://redgifs.com",
+            "preview": f"https://via.placeholder.com/300x160?text=RedGIFs+{query}",
+            "source": "RedGIFs"
         }
-        for i in range(5)
     ]
