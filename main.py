@@ -23,7 +23,7 @@ async def root(request: Request):
 
 @app.get("/search")
 async def search(query: str = Query(...)):
-    print(f"🔍 Received query: {query}")
+    print(f"\n🔍 Received query: {query}")
     results = scrape_all_sites(query)
-    print(f"📦 Returning {len(results)} results")
+    print(f"📦 scrape_all_sites returned: {results}\n")
     return {"results": results}
