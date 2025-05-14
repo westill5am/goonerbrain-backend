@@ -1,15 +1,14 @@
-from fastapi import FastAPI, Query, Request
+from fastapi import FastAPI, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from scraper import scrape_all_sites
+from scraper.scrape_all_sites import scrape_all_sites  # Adjust this path if needed
 
 app = FastAPI()
 
-# Allow frontend access (local + deployed)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://goonerbrain.com", "http://localhost:8000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,10 +21,7 @@ async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/search")
-async def search(query: str = Query(...)):
-    print(f"\n🔍 Received query: {query}")
-    results = scrape_all_sites(query)
-    print("📦 scrape_all_sites returned:")
-    for item in results:
-        print(f" - {item['source']}: {item['preview']}")
+async def search(query: str = Query(...), mode: str = Query("straight")):
+    print(f"\n🔍 Query: {query}, Mode: {mode}")
+    results = scrape_all_sites(query, mode)
     return {"results": results}
