@@ -1,27 +1,19 @@
-from fastapi import FastAPI, Request, Query
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from scraper.scrape_all_sites import scrape_all_sites  # Adjust this path if needed
+from scrapers.scrape_all_sites import scrape_all_sites
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
+def serve_frontend(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/search")
-async def search(query: str = Query(...), mode: str = Query("straight")):
-    print(f"\n🔍 Query: {query}, Mode: {mode}")
-    results = scrape_all_sites(query, mode)
+def search(query: str, mode: str = "straight", page: int = 1):
+    results = scrape_all_sites(query, mode, page)
     return {"results": results}
