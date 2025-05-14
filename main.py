@@ -1,15 +1,14 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from fastapi import Request
+from scraper import scrape_all_sites
 
 app = FastAPI()
 
-# CORS fix for frontend/backend connection
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://goonerbrain.com"],
+    allow_origins=["https://goonerbrain.com", "http://localhost:8000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -24,13 +23,5 @@ async def root(request: Request):
 @app.get("/search")
 async def search(query: str = Query(...)):
     print(f"🔍 Received query: {query}")
-    return {
-        "results": [
-            {
-                "title": f"🔥 Dummy video result for '{query}'",
-                "url": "https://example.com",
-                "preview": "https://via.placeholder.com/300x160.png?text=Preview",
-                "source": "test"
-            }
-        ]
-    }
+    results = scrape_all_sites(query)
+    return {"results": results}
