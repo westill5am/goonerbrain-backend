@@ -1,59 +1,31 @@
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-import asyncio
+from typing import List
+import uvicorn
 
-# Import all real scraper modules
-from scrapers import (
-    pornhub, tube8, xvideos, spankbang, youporn, eporner, motherless, redgifs,
-    bravotube, beeg, txxx, xhamster, hqporner, xnxx, pornhat, sexvids, hclips,
-    porndig, yespornplease, porndoe, spankwire, femjoy, javhd
-)
+# 🔥 Import your scraper logic (adjust this if needed)
+from scrapers import scrape_sites  # or whatever your actual module is
 
 app = FastAPI()
 
+# ✅ CORS Middleware Fix
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://goonerbrain.com"],
+    allow_origins=["https://goonerbrain.com"],  # only your domain
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
-@app.get("/")
-def root():
-    return {"message": "GoonerBrain Backend is online"}
-
+# ✅ Main search route
 @app.get("/search")
-async def search(query: str):
-    scrapers = [
-        pornhub.scrape_pornhub,
-        tube8.scrape_tube8,
-        xvideos.scrape_xvideos,
-        spankbang.scrape_spankbang,
-        youporn.scrape_youporn,
-        eporner.scrape_eporner,
-        motherless.scrape_motherless,
-        redgifs.scrape_redgifs,
-        bravotube.scrape_bravotube,
-        beeg.scrape_beeg,
-        txxx.scrape_txxx,
-        xhamster.scrape_xhamster,
-        hqporner.scrape_hqporner,
-        xnxx.scrape_xnxx,
-        pornhat.scrape_pornhat,
-        sexvids.scrape_sexvids,
-        hclips.scrape_hclips,
-        porndig.scrape_porndig,
-        yespornplease.scrape_yespornplease,
-        porndoe.scrape_porndoe,
-        spankwire.scrape_spankwire,
-        femjoy.scrape_femjoy,
-        javhd.scrape_javhd,
-    ]
+async def search(query: str = Query(..., min_length=1)):
+    try:
+        results = scrape_sites(query)
+        return {"results": results}
+    except Exception as e:
+        return {"error": str(e)}
 
-    tasks = [asyncio.to_thread(scraper, query) for scraper in scrapers]
-    results_nested = await asyncio.gather(*tasks)
-    results = [item for sublist in results_nested for item in sublist]
-
-    return results
+# 🧪 Local testing (if needed)
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
