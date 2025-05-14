@@ -16,55 +16,121 @@
   <meta name="twitter:image" content="https://goonerbrain.com/og-image.jpg">
   <link rel="icon" href="/favicon.ico" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
 </head>
-<body class="bg-black text-white min-h-screen px-4 py-8">
-  <h1 class="text-center text-4xl sm:text-5xl font-bold text-pink-400 mb-8 animate-pulse">
+<body class="text-white min-h-screen px-4 py-8">
+  <h1 class="text-center text-4xl sm:text-5xl font-bold text-pink-400 mb-6 animate-pulse">
     GoonerBrain Meta Search
   </h1>
+  <div class="flex flex-wrap justify-center gap-4 mb-6">
+    <button onclick="setMode('straight')" class="px-4 py-2 rounded bg-pink-700 hover:bg-pink-600">Straight</button>
+    <button onclick="setMode('gay')" class="px-4 py-2 rounded bg-blue-700 hover:bg-blue-600">Gay</button>
+    <button onclick="setMode('trans')" class="px-4 py-2 rounded bg-purple-700 hover:bg-purple-600">Trans</button>
+  </div>
   <form onsubmit="event.preventDefault(); doSearch();" class="max-w-xl mx-auto mb-8">
     <input id="search" type="text" placeholder="Search..." autocomplete="off"
            class="w-full p-4 rounded-xl text-lg bg-zinc-900 border-2 border-pink-400 text-white focus:ring-2 focus:ring-pink-500 shadow-[0_0_10px_hotpink]" />
   </form>
   <div id="results"></div>
 
+  <footer class="mt-12 text-sm text-center text-zinc-500 space-y-2">
+    <p>&copy; 2025 GoonerBrain.com. All rights reserved.</p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="#" class="hover:underline">FAQ</a>
+      <a href="#" class="hover:underline">DMCA</a>
+      <a href="#" class="hover:underline">Contact</a>
+      <a href="#" class="hover:underline">Advertise</a>
+      <a href="#" class="hover:underline">Terms</a>
+      <a href="#" class="hover:underline">Privacy</a>
+      <a href="#" class="hover:underline">2257</a>
+    </div>
+    <p class="text-xs">GoonerBrain uses the "Restricted To Adults" (RTA) label to help enable parental filtering.</p>
+  </footer>
+
   <script>
     const backend = location.hostname.includes("goonerbrain") 
       ? "https://goonerbrain.com" 
       : "http://localhost:8000";
+    let currentMode = 'straight';
+    let currentPage = 1;
+    let query = '';
 
-    async function doSearch() {
-      const q = document.getElementById("search").value.trim();
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('button').forEach(btn => btn.classList.remove('ring-4'));
+      event.target.classList.add('ring-4', 'ring-pink-400');
+    }
+
+    async function doSearch(reset = true) {
+      if (reset) {
+        currentPage = 1;
+        query = document.getElementById("search").value.trim();
+        document.getElementById("results").innerHTML = '';
+      }
+      if (!query) return;
+
       const out = document.getElementById("results");
-      if (!q) return;
-      out.innerHTML = `<p class='text-center text-pink-300 animate-pulse'>Searching for <b>${q}</b>...</p>`;
+      const loading = document.createElement('p');
+      loading.className = 'text-center text-pink-300 animate-pulse';
+      loading.innerHTML = `Searching <b>${currentMode}</b> content for <b>${query}</b>...`;
+      out.appendChild(loading);
 
       try {
-        const res = await fetch(`${backend}/search?query=${encodeURIComponent(q)}`);
+        const res = await fetch(`${backend}/search?query=${encodeURIComponent(query)}&mode=${currentMode}&page=${currentPage}`);
         const data = await res.json();
+        out.removeChild(loading);
 
         const results = data.results || [];
-        if (!results.length) {
+        if (!results.length && reset) {
           out.innerHTML = `<p class='text-center text-gray-400'>No results found.</p>`;
           return;
         }
 
-        out.innerHTML = `<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">` +
-          results.map(v => {
-            const preview = v.preview?.trim() || `https://via.placeholder.com/300x160?text=${encodeURIComponent(v.source + " " + q)}`;
-            const isVideo = /\.(mp4|webm)$/i.test(preview);
-            return `
-              <div class="bg-zinc-800 p-4 rounded-xl shadow-[0_0_10px_hotpink] hover:shadow-[0_0_20px_deeppink] transition-transform duration-300 hover:scale-105">
-                <a href="${v.url}" target="_blank" rel="noopener noreferrer">
-                  ${isVideo
-                    ? `<video src="${preview}" muted loop preload="none" class="rounded mb-2 w-full h-48 object-cover" 
-                        onmouseover="this.play()" onmouseout="this.pause(); this.currentTime = 0;"></video>`
-                    : `<img src="${preview}" alt="${v.title}" class="rounded mb-2 w-full h-48 object-cover" />`
-                  }
-                  <h3 class="text-lg font-semibold text-pink-300">${v.title}</h3>
-                  <p class="text-sm text-zinc-400">📺 ${v.source}</p>
-                </a>
-              </div>`;
-          }).join('') + `</div>`;
+        const container = document.createElement('div');
+        container.className = "grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3";
+        results.forEach(v => {
+          const preview = v.preview?.trim() || `https://via.placeholder.com/300x160?text=${encodeURIComponent(v.source + " " + query)}`;
+          const isVideo = /\.(mp4|webm)$/i.test(preview);
+
+          const card = document.createElement('div');
+          card.className = "bg-zinc-800 p-4 rounded-xl shadow-[0_0_10px_hotpink] hover:shadow-[0_0_20px_deeppink] transition-all duration-300 hover:scale-105";
+
+          card.innerHTML = `
+            <a href="${v.url}" target="_blank" rel="noopener noreferrer">
+              ${isVideo
+                ? `<video src="${preview}" muted loop preload="none" class="rounded mb-2 w-full h-48 object-cover"
+                    onmouseover="this.play()" onmouseout="this.pause(); this.currentTime = 0;"></video>`
+                : `<img src="${preview}" alt="${v.title}" class="rounded mb-2 w-full h-48 object-cover" />`
+              }
+              <h3 class="text-lg font-semibold text-pink-300">${v.title}</h3>
+              <p class="text-sm text-zinc-400">📺 ${v.source}</p>
+            </a>`;
+
+          container.appendChild(card);
+        });
+
+        out.appendChild(container);
+
+        const loadMore = document.createElement('button');
+        loadMore.className = 'mt-6 block mx-auto px-6 py-2 bg-pink-600 text-white rounded hover:bg-pink-500';
+        loadMore.innerText = 'Load More';
+        loadMore.onclick = () => {
+          currentPage++;
+          loadMore.remove();
+          doSearch(false);
+        };
+        out.appendChild(loadMore);
       } catch (e) {
         console.error("❌ Fetch error:", e);
         out.innerHTML = `<p class='text-red-500 text-center'>Error: ${e.message}</p>`;
