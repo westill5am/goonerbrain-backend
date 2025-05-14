@@ -2,116 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GoonerBrain Meta Search</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #0d0d0d;
-      color: white;
-      margin: 0;
-      padding: 40px 20px;
-      text-align: center;
-    }
-    input[type="text"] {
-      padding: 10px;
-      font-size: 1.2em;
-      width: 90%;
-      max-width: 500px;
-      border-radius: 8px;
-      border: none;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-      margin-top: 40px;
-    }
-    .card {
-      background: #1c1c1c;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(255, 105, 180, 0.2);
-      text-align: left;
-      transition: transform 0.2s ease;
-    }
-    .card:hover {
-      transform: scale(1.02);
-    }
-    video, img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 6px;
-    }
-    h3 {
-      margin: 10px 0 5px;
-      font-size: 1.1em;
-    }
-    .source {
-      font-size: 0.85em;
-      color: #aaa;
-    }
-  </style>
+  <meta name="description" content="Search across top adult sites instantly. GoonerBrain is the ultimate NSFW video search tool." />
+  <meta property="og:title" content="GoonerBrain Meta Search">
+  <meta property="og:description" content="Search across top adult sites instantly. GoonerBrain is the ultimate NSFW video search tool.">
+  <meta property="og:image" content="https://goonerbrain.com/og-image.jpg">
+  <meta property="og:url" content="https://goonerbrain.com">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="GoonerBrain Meta Search">
+  <meta name="twitter:description" content="Search across top adult sites instantly.">
+  <meta name="twitter:image" content="https://goonerbrain.com/og-image.jpg">
+  <link rel="icon" href="/favicon.ico" />
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h1 style="color:hotpink;">GoonerBrain Meta Search</h1>
-  <input id="search" type="text" placeholder="Search..." autocomplete="off" />
+<body class="bg-black text-white min-h-screen px-4 py-8">
+  <h1 class="text-center text-4xl sm:text-5xl font-bold text-pink-400 mb-8 animate-pulse">
+    GoonerBrain Meta Search
+  </h1>
+  <form onsubmit="event.preventDefault(); doSearch();" class="max-w-xl mx-auto mb-8">
+    <input id="search" type="text" placeholder="Search..." autocomplete="off"
+           class="w-full p-4 rounded-xl text-lg bg-zinc-900 border-2 border-pink-400 text-white focus:ring-2 focus:ring-pink-500 shadow-[0_0_10px_hotpink]" />
+  </form>
   <div id="results"></div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const input = document.getElementById("search");
+    const backend = location.hostname.includes("goonerbrain") 
+      ? "https://goonerbrain.com" 
+      : "http://localhost:8000";
 
-      input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") doSearch();
-      });
+    async function doSearch() {
+      const q = document.getElementById("search").value.trim();
+      const out = document.getElementById("results");
+      if (!q) return;
+      out.innerHTML = `<p class='text-center text-pink-300 animate-pulse'>Searching for <b>${q}</b>...</p>`;
 
-      async function doSearch() {
-        const q = input.value.trim();
-        const out = document.getElementById("results");
-        if (!q) return;
+      try {
+        const res = await fetch(`${backend}/search?query=${encodeURIComponent(q)}`);
+        const data = await res.json();
 
-        out.innerHTML = `<p>Searching for <b>${q}</b>...</p>`;
-        try {
-          const res = await fetch(`https://goonerbrain-backend.onrender.com/search?query=${encodeURIComponent(q)}`);
-          const data = await res.json();
-          console.log("📦 RAW RESPONSE:", data);
+        const results = data.results || [];
+        if (!results.length) {
+          out.innerHTML = `<p class='text-center text-gray-400'>No results found.</p>`;
+          return;
+        }
 
-          const results = data.results || [];
-          if (!results.length) {
-            out.innerHTML = `<p>No results found.</p>`;
-            return;
-          }
-
-          out.innerHTML = `<div class="grid">` + results.map(v => {
-            const preview = v.preview && v.preview.trim() !== "" 
-              ? v.preview 
-              : `https://via.placeholder.com/300x160?text=${encodeURIComponent(v.source + " " + q)}`;
+        out.innerHTML = `<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">` +
+          results.map(v => {
+            const preview = v.preview?.trim() || `https://via.placeholder.com/300x160?text=${encodeURIComponent(v.source + " " + q)}`;
             const isVideo = /\.(mp4|webm)$/i.test(preview);
             return `
-              <div class="card">
-                <a href="${v.url}" target="_blank">
+              <div class="bg-zinc-800 p-4 rounded-xl shadow-[0_0_10px_hotpink] hover:shadow-[0_0_20px_deeppink] transition-transform duration-300 hover:scale-105">
+                <a href="${v.url}" target="_blank" rel="noopener noreferrer">
                   ${isVideo
-                    ? `<video src="${preview}" muted loop preload="none"
-                        onmouseover="this.play()" 
-                        onmouseout="this.pause(); this.currentTime = 0;">
-                        <source src="${preview}" type="video/mp4" />
-                     </video>`
-                    : `<img src="${preview}" alt="${v.title}" />`
+                    ? `<video src="${preview}" muted loop preload="none" class="rounded mb-2 w-full h-48 object-cover" 
+                        onmouseover="this.play()" onmouseout="this.pause(); this.currentTime = 0;"></video>`
+                    : `<img src="${preview}" alt="${v.title}" class="rounded mb-2 w-full h-48 object-cover" />`
                   }
+                  <h3 class="text-lg font-semibold text-pink-300">${v.title}</h3>
+                  <p class="text-sm text-zinc-400">📺 ${v.source}</p>
                 </a>
-                <h3>${v.title}</h3>
-                <div class="source">📺 ${v.source}</div>
-              </div>
-            `;
+              </div>`;
           }).join('') + `</div>`;
-        } catch (e) {
-          console.error("❌ Fetch error:", e);
-          out.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
-        }
+      } catch (e) {
+        console.error("❌ Fetch error:", e);
+        out.innerHTML = `<p class='text-red-500 text-center'>Error: ${e.message}</p>`;
       }
-    });
+    }
   </script>
 </body>
 </html>
