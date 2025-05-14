@@ -2,95 +2,100 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>GoonerBrain Search</title>
+  <title>GoonerBrain Meta Search</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: "Segoe UI", sans-serif;
       background: #0d0d0d;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
+      color: white;
+      margin: 0;
+      padding: 40px;
+      text-align: center;
     }
-    h1 {
-      color: #fff;
-    }
-    input, button {
+    input[type="text"] {
       padding: 10px;
-      font-size: 1rem;
-      margin: 0.5rem;
+      font-size: 1.2em;
+      width: 60%;
+      max-width: 500px;
+      border-radius: 8px;
+      border: none;
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1rem;
-      margin-top: 2rem;
-      width: 100%;
-      max-width: 1200px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+      padding: 0 20px;
     }
     .card {
       background: #1c1c1c;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(255, 0, 128, 0.2);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255, 105, 180, 0.2);
+      text-align: left;
     }
     video, img {
       width: 100%;
+      height: 180px;
+      object-fit: cover;
       border-radius: 6px;
     }
     h3 {
-      font-size: 1rem;
-      margin: 0.5rem 0 0.2rem;
+      margin: 10px 0 5px;
     }
     .source {
-      font-size: 0.8rem;
+      font-size: 0.85em;
       color: #ccc;
     }
   </style>
 </head>
 <body>
-  <h1>🔍 GoonerBrain Search</h1>
-  <input id="query" type="text" placeholder="Search..." />
-  <button onclick="doSearch()">Search</button>
-
-  <div id="output" class="grid"></div>
+  <h1 style="color:hotpink;">GoonerBrain Meta Search</h1>
+  <input id="search" type="text" placeholder="Search videos..." onkeydown="if(event.key==='Enter')doSearch()" />
+  <div id="results"></div>
 
   <script>
     async function doSearch() {
-      const q = document.getElementById('query').value.trim();
-      const out = document.getElementById('output');
-      if (!q) return;
-      out.innerHTML = `<p>🔍 Searching <b>${q}</b>...</p>`;
+      const query = document.getElementById('search').value.trim();
+      const resultsDiv = document.getElementById('results');
+      if (!query) return;
+
+      resultsDiv.innerHTML = `<p>🔍 Searching <b>${query}</b>...</p>`;
 
       try {
-const res = await fetch(`/search?query=${encodeURIComponent(q)}`);
-        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+        const res = await fetch(`/search?query=${encodeURIComponent(query)}`);
         const data = await res.json();
+        console.log("📦 Raw data from server:", data);
 
-        if (!Array.isArray(data) || data.length === 0) {
-          out.innerHTML = `<p>⚠️ No results found.</p>`;
+        const results = data.results || [];
+
+        if (!Array.isArray(results) || results.length === 0) {
+          resultsDiv.innerHTML = `<p>⚠️ No results found.</p>`;
           return;
         }
 
-        out.innerHTML = data.map(video => {
-const isVideo = /\.(mp4|webm)$/i.test(video.preview);
+        resultsDiv.innerHTML = `<div class="grid">` + results.map(video => {
+          const isVideo = /\.(mp4|webm)$/i.test(video.preview);
           return `
             <div class="card">
               <a href="${video.url}" target="_blank">
                 ${isVideo
-                  ? `<video src="${video.preview}" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>`
-                  : `<img src="${video.preview || 'https://via.placeholder.com/300x160?text=No+Preview'}" alt="${video.title}">`
+                  ? `<video src="${video.preview}" muted loop preload="none"
+                      onmouseover="this.play()" 
+                      onmouseout="this.pause(); this.currentTime = 0;">
+                      <source src="${video.preview}" type="video/mp4" />
+                   </video>`
+                  : `<img src="${video.preview || 'https://via.placeholder.com/300x160?text=No+Preview'}" alt="${video.title}" />`
                 }
               </a>
               <h3>${video.title}</h3>
-              <p>⏱ ${video.duration || 'N/A'}</p>
               <div class="source">📺 ${video.source}</div>
             </div>
           `;
-        }).join('');
+        }).join('') + `</div>`;
       } catch (err) {
-        out.innerHTML = `<p style="color:red;">❌ Error: ${err.message}</p>`;
+        console.error("❌ Error fetching search:", err);
+        resultsDiv.innerHTML = `<p style="color:red;">❌ Error: ${err.message}</p>`;
       }
     }
   </script>
