@@ -74,7 +74,7 @@
 
         out.innerHTML = `<p>Searching for <b>${q}</b>...</p>`;
         try {
-          const res = await fetch(`/search?query=${encodeURIComponent(q)}`);
+const res = await fetch(`https://goonerbrain-backend.onrender.com/search?query=${encodeURIComponent(q)}`);
           const data = await res.json();
           console.log("📦 RAW RESPONSE:", data);
 
