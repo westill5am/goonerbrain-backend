@@ -74,7 +74,7 @@ const res = await fetch(`/search?query=${encodeURIComponent(q)}`);
         }
 
         out.innerHTML = data.map(video => {
-          const isVideo = video.preview?.endsWith('.mp4');
+const isVideo = /\.(mp4|webm)$/i.test(video.preview);
           return `
             <div class="card">
               <a href="${video.url}" target="_blank">
