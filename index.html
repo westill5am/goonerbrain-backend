@@ -85,17 +85,20 @@
           }
 
           out.innerHTML = `<div class="grid">` + results.map(v => {
-            const isVideo = /\.(mp4|webm)$/i.test(v.preview);
+            const preview = v.preview && v.preview.trim() !== "" 
+              ? v.preview 
+              : `https://via.placeholder.com/300x160?text=${encodeURIComponent(v.source + " " + q)}`;
+            const isVideo = /\.(mp4|webm)$/i.test(preview);
             return `
               <div class="card">
                 <a href="${v.url}" target="_blank">
                   ${isVideo
-                    ? `<video src="${v.preview}" muted loop preload="none"
+                    ? `<video src="${preview}" muted loop preload="none"
                         onmouseover="this.play()" 
                         onmouseout="this.pause(); this.currentTime = 0;">
-                        <source src="${v.preview}" type="video/mp4" />
+                        <source src="${preview}" type="video/mp4" />
                      </video>`
-                    : `<img src="${v.preview || 'https://via.placeholder.com/300x160?text=No+Preview'}" alt="${v.title}" />`
+                    : `<img src="${preview}" alt="${v.title}" />`
                   }
                 </a>
                 <h3>${v.title}</h3>
