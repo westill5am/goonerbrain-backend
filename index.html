@@ -51,53 +51,56 @@
 </head>
 <body>
   <h1 style="color:hotpink;">GoonerBrain Meta Search</h1>
-  <input id="search" type="text" placeholder="Search..." onkeydown="if(event.key==='Enter')doSearch()" />
+  <input id="search" type="text" placeholder="Search..." />
   <div id="results"></div>
 
   <script>
-    async function doSearch() {
-      const query = document.getElementById('search').value.trim();
-      const resultsDiv = document.getElementById('results');
-      if (!query) return;
+    document.addEventListener("DOMContentLoaded", () => {
+      const input = document.getElementById("search");
 
-      resultsDiv.innerHTML = `<p>🔍 Searching <b>${query}</b>...</p>`;
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") doSearch();
+      });
 
-      try {
-        const res = await fetch(`/search?query=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        console.log("📦 Raw response:", data);
+      async function doSearch() {
+        const q = input.value.trim();
+        const out = document.getElementById("results");
+        if (!q) return;
 
-        const results = data.results || [];
+        out.innerHTML = `<p>Searching for <b>${q}</b>...</p>`;
+        try {
+          const res = await fetch(`/search?query=${encodeURIComponent(q)}`);
+          const data = await res.json();
+          console.log("📦 RAW RESPONSE:", data);
 
-        if (!Array.isArray(results) || results.length === 0) {
-          resultsDiv.innerHTML = `<p>⚠️ No results found.</p>`;
-          return;
+          const results = data.results || [];
+          if (!results.length) return out.innerHTML = `<p>No results found.</p>`;
+
+          out.innerHTML = `<div class="grid">` + results.map(v => {
+            const isVideo = /\.(mp4|webm)$/i.test(v.preview);
+            return `
+              <div class="card">
+                <a href="${v.url}" target="_blank">
+                  ${isVideo
+                    ? `<video src="${v.preview}" muted loop preload="none"
+                        onmouseover="this.play()" 
+                        onmouseout="this.pause(); this.currentTime = 0;">
+                        <source src="${v.preview}" type="video/mp4" />
+                     </video>`
+                    : `<img src="${v.preview || 'https://via.placeholder.com/300x160?text=No+Preview'}" alt="${v.title}" />`
+                  }
+                </a>
+                <h3>${v.title}</h3>
+                <div class="source">📺 ${v.source}</div>
+              </div>
+            `;
+          }).join('') + `</div>`;
+        } catch (e) {
+          out.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+          console.error("❌ Fetch error:", e);
         }
-
-        resultsDiv.innerHTML = `<div class="grid">` + results.map(video => {
-          const isVideo = /\.(mp4|webm)$/i.test(video.preview);
-          return `
-            <div class="card">
-              <a href="${video.url}" target="_blank">
-                ${isVideo
-                  ? `<video src="${video.preview}" muted loop preload="none"
-                      onmouseover="this.play()" 
-                      onmouseout="this.pause(); this.currentTime = 0;">
-                      <source src="${video.preview}" type="video/mp4" />
-                   </video>`
-                  : `<img src="${video.preview || 'https://via.placeholder.com/300x160?text=No+Preview'}" alt="${video.title}" />`
-                }
-              </a>
-              <h3>${video.title}</h3>
-              <div class="source">📺 ${video.source}</div>
-            </div>
-          `;
-        }).join('') + `</div>`;
-      } catch (err) {
-        console.error("❌ Error:", err);
-        resultsDiv.innerHTML = `<p style="color:red;">❌ ${err.message}</p>`;
       }
-    }
+    });
   </script>
 </body>
 </html>
