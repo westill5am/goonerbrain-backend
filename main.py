@@ -1,12 +1,12 @@
-from fastapi import FastAPI, Query, Request
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
-import os
+from fastapi import Request
 
 app = FastAPI()
 
-# ✅ Allow frontend
+# CORS fix for frontend/backend connection
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://goonerbrain.com"],
@@ -18,23 +18,19 @@ app.add_middleware(
 templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
+async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
-
-@app.get("/favicon.ico", include_in_schema=False)
-async def favicon():
-    return FileResponse("static/favicon.ico")
 
 @app.get("/search")
 async def search(query: str = Query(...)):
     print(f"🔍 Received query: {query}")
-    results = [
-        {
-            "title": f"Test video for '{query}'",
-            "url": "https://example.com",
-            "preview": "https://via.placeholder.com/300x160?text=Preview",
-            "source": "test"
-        }
-    ]
-    print(f"✅ Returning {len(results)} fake result(s)")
-    return {"results": results}
+    return {
+        "results": [
+            {
+                "title": f"🔥 Dummy video result for '{query}'",
+                "url": "https://example.com",
+                "preview": "https://via.placeholder.com/300x160.png?text=Preview",
+                "source": "test"
+            }
+        ]
+    }
