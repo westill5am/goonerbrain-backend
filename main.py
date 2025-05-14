@@ -1,15 +1,16 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
+import os
 
-from scraper import scrape_all_sites  # adjust if you're using `scrapers/` folder
+# ✅ Adjust to your real scrape module
+from scraper import scrape_all_sites
 
 app = FastAPI()
 
-# CORS: Allow frontend to access backend
+# ✅ CORS setup to allow frontend domain
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://goonerbrain.com"],
@@ -18,7 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve template
+# ✅ Jinja2 template loader
 templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
@@ -29,6 +30,18 @@ async def home(request: Request):
 async def search(query: str = Query(..., min_length=1)):
     try:
         results = scrape_all_sites(query)
+        print(f"🔍 Query: '{query}' — Returned {len(results)} results")
         return {"results": results}
     except Exception as e:
-        return {"results": [], "error": str(e)}
+        print(f"❌ Scraper error: {str(e)}")
+        return {
+            "results": [
+                {
+                    "title": f"Fake video for '{query}'",
+                    "url": "https://example.com",
+                    "preview": "https://via.placeholder.com/300x160?text=Preview",
+                    "source": "fallback"
+                }
+            ],
+            "error": str(e)
+        }
