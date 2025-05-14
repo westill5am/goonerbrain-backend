@@ -27,3 +27,6 @@ async def search(query: str = Query(...)):
     results = scrape_all_sites(query)
     print(f"📦 scrape_all_sites returned: {results}\n")
     return {"results": results}
+print("Preview fields returned:")
+for item in results:
+    print(f" - {item['source']}: {item['preview']}")
