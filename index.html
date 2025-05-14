@@ -64,7 +64,7 @@
       out.innerHTML = `<p>🔍 Searching <b>${q}</b>...</p>`;
 
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+const res = await fetch(`/search?query=${encodeURIComponent(q)}`);
         if (!res.ok) throw new Error(`Server responded with ${res.status}`);
         const data = await res.json();
 
