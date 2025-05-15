@@ -1,33 +1,34 @@
-
 import requests
 from bs4 import BeautifulSoup
 
-def scrape_youporn(query, max_pages=10):
+def scrape_youporn(query, mode="straight", page=1):
     results = []
     headers = {'User-Agent': 'Mozilla/5.0'}
-
-    for page in range(1, max_pages + 1):
+    if mode == "gay":
+        url = f"https://www.youporn.com/gay/videos/?query={query}&page={page}"
+    elif mode == "trans":
+        url = f"https://www.youporn.com/search/?query=trans+{query}&page={page}"
+    else:
         url = f"https://www.youporn.com/search/?query={query}&page={page}"
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            break
-
-        soup = BeautifulSoup(response.content, 'html.parser')
-        videos = soup.select('.video-box')
-
-        for video in videos:
-            try:
-                title = video.select_one(".video-title").text.strip()
-                video_url = "https://www.youporn.com" + video.select_one("a")["href"]
-                preview = video.select_one("img")["data-thumbnail"]
-
-                results.append({
-                    "title": title,
-                    "url": video_url,
-                    "preview": preview,
-                    "source": "youporn"
-                })
-            except:
+    r = requests.get(url, headers=headers, timeout=10)
+    if r.status_code != 200:
+        return results
+    soup = BeautifulSoup(r.content, "html.parser")
+    for vid in soup.select("div.video-box"):
+        try:
+            a = vid.select_one("a")
+            if not a or not a.has_attr('href'):
                 continue
-
+            title = a.get('title') or a.text.strip()
+            video_url = "https://www.youporn.com" + a['href']
+            img = vid.select_one("img")
+            preview = img.get('data-thumbnail') or img.get('src')
+            results.append({
+                "title": title,
+                "url": video_url,
+                "preview": preview,
+                "source": f"YouPorn ({mode})"
+            })
+        except Exception:
+            continue
     return results
