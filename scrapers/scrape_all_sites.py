@@ -1,26 +1,19 @@
-from .pornhub import scrape_pornhub
-from .xvideos import scrape_xvideos
-from .spankbang import scrape_spankbang
-from .redgifs import scrape_redgifs
+from . import SCRAPER_FUNCS
 
 def scrape_all_sites(query, mode="straight", page=1):
     results = []
-    scrapers = [
-        ("Pornhub", scrape_pornhub),
-        ("Xvideos", scrape_xvideos),
-        ("SpankBang", scrape_spankbang),
-        ("RedGIFs", scrape_redgifs)
-    ]
-    for name, scraper in scrapers:
+    for scraper in SCRAPER_FUNCS:
         try:
-            # You can adjust max_pages per scraper if you want
-            results += scraper(query, page=page, max_pages=1)
+            r = scraper(query, mode, page)
+            if r and isinstance(r, list):
+                results.extend(r)
         except Exception as e:
+            print(f"[!] Error in {scraper.__name__}: {e}")
             results.append({
-                "title": "Error",
+                "title": f"{scraper.__name__} error",
                 "url": "#",
                 "preview": "",
-                "source": name,
-                "error": str(e)
+                "source": scraper.__name__,
+                "error": str(e),
             })
     return results
