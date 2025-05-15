@@ -27,3 +27,7 @@ def search(query: str, mode: str = "straight", page: int = 1):
             return {"results": [], "error": "Search term not allowed."}
     results = scrape_all_sites(query, mode, page)
     return {"results": results}
+    
+@app.get("/tos", response_class=HTMLResponse)
+def tos_page(request: Request):
+    return templates.TemplateResponse("tos.html", {"request": request})
