@@ -3,32 +3,40 @@ from bs4 import BeautifulSoup
 
 def scrape_youporn(query, mode="straight", page=1):
     results = []
-    headers = {'User-Agent': 'Mozilla/5.0'}
     if mode == "gay":
-        url = f"https://www.youporn.com/gay/videos/?query={query}&page={page}"
+        query = f"gay {query}"
     elif mode == "trans":
-        url = f"https://www.youporn.com/search/?query=trans+{query}&page={page}"
-    else:
-        url = f"https://www.youporn.com/search/?query={query}&page={page}"
-    r = requests.get(url, headers=headers, timeout=10)
-    if r.status_code != 200:
-        return results
-    soup = BeautifulSoup(r.content, "html.parser")
-    for vid in soup.select("div.video-box"):
-        try:
-            a = vid.select_one("a")
-            if not a or not a.has_attr('href'):
+        query = f"trans {query}"
+
+    url = f"https://www.youporn.com/results/?search={query}&page={page}"
+    headers = {'User-Agent': 'Mozilla/5.0'}
+
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(r.content, "html.parser")
+
+        for video in soup.select("div.video-box"):
+            try:
+                a = video.select_one("a.video-box-image")
+                if not a or not a.has_attr("href"):
+                    continue
+
+                video_url = "https://www.youporn.com" + a['href']
+                title = a.get("title") or video.select_one("div.ellipsis").text.strip()
+                img = a.select_one("img")
+                preview = img.get("src") or img.get("data-src") or ""
+
+                if not preview or "placeholder" in preview:
+                    continue
+
+                results.append({
+                    "title": title.strip(),
+                    "url": video_url,
+                    "preview": preview.strip(),
+                    "source": f"YouPorn ({mode})"
+                })
+            except:
                 continue
-            title = a.get('title') or a.text.strip()
-            video_url = "https://www.youporn.com" + a['href']
-            img = vid.select_one("img")
-            preview = img.get('data-thumbnail') or img.get('src')
-            results.append({
-                "title": title,
-                "url": video_url,
-                "preview": preview,
-                "source": f"YouPorn ({mode})"
-            })
-        except Exception:
-            continue
+    except Exception as e:
+        print(f"[YouPorn] Error: {e}")
     return results
