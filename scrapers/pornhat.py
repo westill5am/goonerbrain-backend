@@ -1,34 +1,31 @@
-
 import requests
 from bs4 import BeautifulSoup
 
-def scrape_pornhat(query, max_pages=10):
+def scrape_pornhat(query, mode="straight", page=1):
     results = []
+    if mode == "gay":
+        query = f"gay {query}"
+    elif mode == "trans":
+        query = f"trans {query}"
+    url = f"https://www.pornhat.com/search/{query}/?page={page}"
     headers = {'User-Agent': 'Mozilla/5.0'}
-    
-    for page in range(1, max_pages + 1):
-        url = f"https://www.pornhat.com/search/{query}/{page}"
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            break
-        
-        soup = BeautifulSoup(response.content, 'html.parser')
-        videos = soup.select('.thumb')
-
-        for video in videos:
-            try:
-                a = video.select_one('a')
-                title = a.get('title')
-                video_url = "https://www.pornhat.com" + a['href']
-                preview = video.select_one('img')['data-src']
-
-                results.append({
-                    "title": title,
-                    "url": video_url,
-                    "preview": preview,
-                    "source": "pornhat"
-                })
-            except:
+    r = requests.get(url, headers=headers, timeout=10)
+    soup = BeautifulSoup(r.content, "html.parser")
+    for vid in soup.select("div.video-item"):
+        try:
+            a = vid.select_one("a.img")
+            if not a or not a.has_attr("href"):
                 continue
-
+            title = a.get('title') or a.text.strip()
+            video_url = "https://www.pornhat.com" + a['href']
+            img = a.select_one("img")
+            preview = img.get("data-src") or img.get("src")
+            results.append({
+                "title": title,
+                "url": video_url,
+                "preview": preview,
+                "source": f"Pornhat ({mode})"
+            })
+        except Exception:
+            continue
     return results
