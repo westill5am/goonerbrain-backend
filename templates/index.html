@@ -36,12 +36,16 @@
       box-shadow: 0 2px 8px #ffb1e92a;
     }
     h1 {
-      color: #d968a2;
-      letter-spacing: 0.02em;
+      background: linear-gradient(90deg,#fd91d6 0,#7ca1ff 60%,#c499ff 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      font-weight: 900;
+      letter-spacing: 0.05em;
       font-size: 2.5em;
       margin-top: 0;
       margin-bottom: 10px;
-      text-shadow: 0 1px 10px #c055a0, 0 0 5px #6f1848;
+      text-shadow: 0 1px 12px #c055a088;
     }
     #modes {
       margin-bottom: 18px;
@@ -112,12 +116,13 @@
       border-radius: 12px;
       box-shadow: 0 0 16px rgba(255, 105, 180, 0.09);
       text-align: left;
-      transition: transform 0.18s;
+      transition: transform 0.18s, box-shadow 0.18s;
       position: relative;
     }
     .card:hover {
-      transform: scale(1.025);
-      box-shadow: 0 0 32px 0 #ff99da27;
+      transform: scale(1.035) rotate(-1.2deg);
+      box-shadow: 0 0 36px 0 #e99aff31;
+      z-index: 1;
     }
     video, img {
       width: 100%;
@@ -153,17 +158,15 @@
       body { padding: 20px 0 0 0; }
     }
   </style>
-  <!-- Example: PopAds script (replace YOUR_ID_HERE!) -->
-  <!--
+  <!-- PopAds example (plug-and-play, just fill in your PopAds "id") -->
   <script>
   var popunder = {
-    "id": "YOUR_ID_HERE",
+    "id": "YOUR_ID_HERE", // <-- Replace this with your real PopAds publisher ID!
     "frequency_period": 5,
     "frequency_count": 1
   };
   </script>
   <script src="https://cdn.popads.net/pop.js"></script>
-  -->
 </head>
 <body>
   <div class="age-warning">
@@ -173,9 +176,15 @@
   <h1>GoonerBrain Meta Search</h1>
 
   <div id="modes">
-    <button type="button" class="mode-btn selected" data-mode="straight" id="btn-straight">Straight</button>
-    <button type="button" class="mode-btn" data-mode="gay" id="btn-gay">Gay</button>
-    <button type="button" class="mode-btn" data-mode="trans" id="btn-trans">Trans</button>
+    <button type="button" class="mode-btn selected" data-mode="straight" id="btn-straight">
+      <span style="font-size:1.3em;vertical-align:middle;">♂️</span> Straight
+    </button>
+    <button type="button" class="mode-btn" data-mode="gay" id="btn-gay">
+      <span style="font-size:1.3em;vertical-align:middle;">🌈</span> Gay
+    </button>
+    <button type="button" class="mode-btn" data-mode="trans" id="btn-trans">
+      <span style="font-size:1.3em;vertical-align:middle;">⚧️</span> Trans
+    </button>
   </div>
 
   <div class="trending-bar" id="trendingTags"></div>
