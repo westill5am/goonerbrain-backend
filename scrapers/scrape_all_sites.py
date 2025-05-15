@@ -1,19 +1,22 @@
+# scrapers/scrape_all_sites.py
+
 from . import SCRAPER_FUNCS
 
-def scrape_all_sites(query, mode="straight", page=1):
-    results = []
-    for scraper in SCRAPER_FUNCS:
+def scrape_all_sites(query: str, mode: str = "straight", page: int = 1):
+    """
+    Run each scraper in SCRAPER_FUNCS against (query, mode, page),
+    concatenate all their results into a single list.
+    Each scraper must have signature: fn(query, mode, page) -> List[dict]
+    """
+    all_results = []
+
+    for fn in SCRAPER_FUNCS:
         try:
-            r = scraper(query, mode, page)
-            if r and isinstance(r, list):
-                results.extend(r)
+            results = fn(query, mode, page)
+            if results:
+                all_results.extend(results)
         except Exception as e:
-            print(f"[!] Error in {scraper.__name__}: {e}")
-            results.append({
-                "title": f"{scraper.__name__} error",
-                "url": "#",
-                "preview": "",
-                "source": scraper.__name__,
-                "error": str(e),
-            })
-    return results
+            # Log scraper failure and keep going
+            print(f"[scrape_all_sites] {fn.__name__} failed:", e)
+
+    return all_results
