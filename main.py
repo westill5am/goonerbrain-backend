@@ -13,7 +13,17 @@ templates = Jinja2Templates(directory="templates")
 def serve_frontend(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+ILLEGAL_TERMS = [
+    "cp", "child", "kids", "preteen", "underage", "minor",
+    "lolita", "pedo", "beastiality", "zoophilia", "dog", "horse", "animal",
+    "rape", "snuff", "incest", "torture"
+]
+
 @app.get("/search")
 def search(query: str, mode: str = "straight", page: int = 1):
+    normalized = query.lower()
+    for term in ILLEGAL_TERMS:
+        if term in normalized:
+            return {"results": [], "error": "Search term not allowed."}
     results = scrape_all_sites(query, mode, page)
     return {"results": results}
