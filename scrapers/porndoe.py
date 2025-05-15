@@ -7,25 +7,33 @@ def scrape_porndoe(query, mode="straight", page=1):
         query = f"gay {query}"
     elif mode == "trans":
         query = f"trans {query}"
+
     url = f"https://www.porndoe.com/search/videos/{query}/page/{page}/"
     headers = {'User-Agent': 'Mozilla/5.0'}
-    r = requests.get(url, headers=headers, timeout=10)
-    soup = BeautifulSoup(r.content, "html.parser")
-    for vid in soup.select("div.video-item"):
-        try:
-            a = vid.select_one("a")
-            if not a or not a.has_attr("href"):
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(r.content, "html.parser")
+
+        for vid in soup.select("div.video-item"):
+            try:
+                a = vid.select_one("a[href]")
+                img = vid.select_one("img")
+
+                title = a.get('title') or a.text.strip()
+                video_url = "https://www.porndoe.com" + a['href']
+                preview = img.get("src") or img.get("data-src") or ""
+
+                if not preview or "placeholder" in preview:
+                    continue
+
+                results.append({
+                    "title": title.strip(),
+                    "url": video_url,
+                    "preview": preview.strip(),
+                    "source": f"Porndoe ({mode})"
+                })
+            except:
                 continue
-            title = a.get('title') or a.text.strip()
-            video_url = "https://www.porndoe.com" + a['href']
-            img = vid.select_one("img")
-            preview = img.get("src") if img else ""
-            results.append({
-                "title": title,
-                "url": video_url,
-                "preview": preview,
-                "source": f"Porndoe ({mode})"
-            })
-        except Exception:
-            continue
+    except Exception as e:
+        print(f"[Porndoe] Error: {e}")
     return results
