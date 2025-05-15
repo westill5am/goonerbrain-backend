@@ -1,35 +1,31 @@
-
 import requests
 from bs4 import BeautifulSoup
 
-def scrape_fux(query, max_pages=50):
+def scrape_fux(query, mode="straight", page=1):
     results = []
+    if mode == "gay":
+        query = f"gay {query}"
+    elif mode == "trans":
+        query = f"trans {query}"
+    url = f"https://www.fux.com/search/videos/{query}/?page={page}"
     headers = {'User-Agent': 'Mozilla/5.0'}
-
-    for page in range(1, max_pages + 1):
-        # TODO: Update URL and parsing logic for site
-        url = f"https://example.com/search?q={query}&page={page}"
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            break
-
-        soup = BeautifulSoup(response.content, 'html.parser')
-        videos = soup.select('PLACEHOLDER_SELECTOR')
-
-        if not videos:
-            break
-
-        for video in videos:
-            # Extract proper title, url, and video preview
-            title = "PLACEHOLDER"
-            video_url = "https://example.com/PLACEHOLDER"
-            preview = "https://example.com/preview.mp4"
-
+    r = requests.get(url, headers=headers, timeout=10)
+    soup = BeautifulSoup(r.content, "html.parser")
+    for vid in soup.select("div.item"):
+        try:
+            a = vid.select_one("a")
+            if not a or not a.has_attr("href"):
+                continue
+            title = a.get('title') or a.text.strip()
+            video_url = "https://www.fux.com" + a['href']
+            img = vid.select_one("img")
+            preview = img.get("data-src") or img.get("src")
             results.append({
                 "title": title,
                 "url": video_url,
                 "preview": preview,
-                "source": "fux"
+                "source": f"Fux ({mode})"
             })
-
+        except Exception:
+            continue
     return results
