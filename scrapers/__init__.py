@@ -42,7 +42,6 @@ SCRAPER_FUNCS = [
     scrape_erome,
     scrape_fux,
     scrape_hclips,
-    scrape_jw4hd,
     scrape_milftzy,
     scrape_motherless,
     scrape_porndig,
