@@ -1,33 +1,28 @@
-
 import requests
 from bs4 import BeautifulSoup
 
-def scrape_rule34(query, max_pages=50):
+def scrape_rule34(query, mode="straight", page=1):
     results = []
-    headers = {'User-Agent': 'Mozilla/5.0'}
-
-    for page in range(1, max_pages + 1):
-        url = f"https://example.com/search?q={query}&page={page}"
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            break
-
-        soup = BeautifulSoup(response.content, 'html.parser')
-        videos = soup.select('div.video')  # placeholder
-
-        if not videos:
-            break
-
-        for video in videos:
-            title = "Sample Title"
-            video_url = "https://example.com/sample"
-            preview = "https://via.placeholder.com/300x160.mp4"
-
+    tag = query
+    if mode == "gay":
+        tag = f"gay {query}"
+    elif mode == "trans":
+        tag = f"trans {query}"
+    url = f"https://rule34.xxx/index.php?page=post&s=list&tags={tag}&pid={(page-1)*42}"
+    r = requests.get(url, timeout=10)
+    soup = BeautifulSoup(r.content, "html.parser")
+    for img in soup.select("span.thumb > a"):
+        try:
+            href = img['href']
+            full_url = f"https://rule34.xxx{href}"
+            img_el = img.select_one("img")
+            preview = img_el['src'] if img_el else ""
             results.append({
-                "title": title,
-                "url": video_url,
+                "title": img_el.get('alt', 'rule34') if img_el else 'rule34',
+                "url": full_url,
                 "preview": preview,
-                "source": "rule34"
+                "source": f"Rule34 ({mode})"
             })
-
+        except Exception:
+            continue
     return results
