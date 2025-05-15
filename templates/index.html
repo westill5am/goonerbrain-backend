@@ -24,17 +24,6 @@
       padding: 40px 0 0 0;
       text-align: center;
     }
-    .age-warning {
-      background: #ffe1ef;
-      color: #a10036;
-      padding: 13px 18px;
-      margin: 0 auto 24px auto;
-      border-radius: 8px;
-      max-width: 430px;
-      font-size: 1.08em;
-      font-weight: bold;
-      box-shadow: 0 2px 8px #ffb1e92a;
-    }
     h1 {
       background: linear-gradient(90deg,#fd91d6 0,#7ca1ff 60%,#c499ff 100%);
       background-clip: text;
@@ -114,7 +103,7 @@
       background: #1c1c1c;
       padding: 15px;
       border-radius: 12px;
-      box-shadow: 0 0 16px rgba(255, 105, 180, 0.09);
+      box-shadow: 0 0 12px 0 #8e2b6017;
       text-align: left;
       transition: transform 0.18s, box-shadow 0.18s;
       position: relative;
@@ -158,18 +147,18 @@
       body { padding: 20px 0 0 0; }
     }
   </style>
-  <!-- PopAds example (plug-and-play, just fill in your PopAds "id") -->
+
+  <!-- PopAds (just paste your publisher ID below) -->
   <script>
-  var popunder = {
-    "id": "YOUR_ID_HERE", // <-- Replace this with your real PopAds publisher ID!
-    "frequency_period": 5,
-    "frequency_count": 1
-  };
+    var popunder = {
+      "id": "YOUR_ID_HERE",
+      "frequency_period": 5,
+      "frequency_count": 1
+    };
   </script>
   <script src="https://cdn.popads.net/pop.js"></script>
 </head>
 <body>
-  
   <h1>GoonerBrain Meta Search</h1>
 
   <div id="modes">
@@ -203,10 +192,11 @@
   </div>
 
   <script>
-    // --- Trending/Popular Tags ---
+    // --- Trending Tags ---
     const trendingTags = [
-      "milf", "ebony", "latina", "stepmom", "public", "anal", "amateur", "femboy", "anime", "bbc", "big tits",
-      "creampie", "lesbian", "group", "blowjob", "tranny", "gay", "sissy", "bbc", "mature", "hentai"
+      "milf", "ebony", "latina", "stepmom", "public", "anal", "amateur",
+      "femboy", "anime", "bbc", "big tits", "creampie", "lesbian", "group",
+      "blowjob", "tranny", "gay", "sissy", "mature", "hentai"
     ];
     function renderTrendingTags() {
       const el = document.getElementById("trendingTags");
@@ -221,7 +211,7 @@
     renderTrendingTags();
 
     // --- Mode Buttons ---
-    let selectedMode = "straight"; // default
+    let selectedMode = "straight";
     document.querySelectorAll(".mode-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("selected"));
@@ -230,21 +220,20 @@
       });
     });
 
-    // --- ILLEGAL TERMS BLOCKER ---
+    // --- Block Illegal Terms ---
     const illegalWords = [
-      "cp", "child", "kids", "preteen", "underage", "minor",
-      "lolita", "pedo", "beastiality", "zoophilia", "dog", "horse", "animal",
-      "rape", "snuff", "incest", "torture"
+      "cp","child","kids","preteen","underage","minor",
+      "lolita","pedo","beastiality","zoophilia","dog","horse","animal",
+      "rape","snuff","incest","torture"
     ];
     function containsIllegalWords(q) {
-      const normalized = q.toLowerCase();
-      return illegalWords.some(term => normalized.includes(term));
+      const n = q.toLowerCase();
+      return illegalWords.some(term => n.includes(term));
     }
 
-    // --- Search Function ---
+    // --- Search Logic ---
     async function doSearch() {
-      const input = document.getElementById("search");
-      const q = input.value.trim();
+      const q = document.getElementById("search").value.trim();
       const out = document.getElementById("results");
       if (!q) return;
       if (containsIllegalWords(q)) {
@@ -253,10 +242,10 @@
       }
       out.innerHTML = `<p>Searching for <b>${q}</b>...</p>`;
       try {
-        const backend = location.hostname.includes("goonerbrain")
+        const base = location.hostname.includes("goonerbrain")
           ? "https://goonerbrain.com"
           : "http://localhost:8000";
-        const res = await fetch(`${backend}/search?query=${encodeURIComponent(q)}&mode=${selectedMode}`);
+        const res = await fetch(`${base}/search?query=${encodeURIComponent(q)}&mode=${selectedMode}`);
         const data = await res.json();
         if (data.error) {
           out.innerHTML = `<p style="color:red;font-weight:bold;">${data.error}</p>`;
@@ -267,35 +256,38 @@
           out.innerHTML = `<p>No results found.</p>`;
           return;
         }
-        out.innerHTML = `<div class="grid">` + results.map(v => {
-          const preview = v.preview && v.preview.trim() !== ""
-            ? v.preview
-            : `https://via.placeholder.com/300x160?text=${encodeURIComponent(v.source + " " + q)}`;
-          const isVideo = /\.(mp4|webm)$/i.test(preview);
-          const error = v.error ? `<div class="error">Error: ${v.error}</div>` : "";
-          return `
-            <div class="card">
-              <a href="${v.url}" target="_blank" rel="noopener noreferrer">
-                ${isVideo
-                  ? `<video src="${preview}" muted loop preload="none"
-                      onmouseover="this.play()"
-                      onmouseout="this.pause(); this.currentTime = 0;">
-                      <source src="${preview}" type="video/mp4" />
-                   </video>`
-                  : `<img src="${preview}" alt="${v.title}" />`
-                }
-              </a>
-              <h3>${v.title}</h3>
-              <div class="source">📺 ${v.source}</div>
-              ${error}
-            </div>
-          `;
-        }).join('') + `</div>`;
+        out.innerHTML = `<div class="grid">` +
+          results.map(v => {
+            const preview = v.preview && v.preview.trim()
+              ? v.preview
+              : `https://via.placeholder.com/300x160?text=${encodeURIComponent(v.source + " " + q)}`;
+            const isVideo = /\.(mp4|webm)$/i.test(preview);
+            const errHtml = v.error ? `<div class="error">Error: ${v.error}</div>` : "";
+            return `
+              <div class="card">
+                <a href="${v.url}" target="_blank" rel="noopener">
+                  ${isVideo
+                    ? `<video src="${preview}" muted loop preload="none"
+                         onmouseover="this.play()"
+                         onmouseout="this.pause(); this.currentTime = 0;">
+                         <source src="${preview}" type="video/mp4" />
+                       </video>`
+                    : `<img src="${preview}" alt="${v.title}"/>`
+                  }
+                </a>
+                <h3>${v.title}</h3>
+                <div class="source">📺 ${v.source}</div>
+                ${errHtml}
+              </div>
+            `;
+          }).join('') +
+        `</div>`;
       } catch (e) {
-        console.error("❌ Fetch error:", e);
+        console.error("Fetch error:", e);
         out.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
       }
     }
+
     document.getElementById("search").addEventListener("keydown", e => {
       if (e.key === "Enter") {
         e.preventDefault();
