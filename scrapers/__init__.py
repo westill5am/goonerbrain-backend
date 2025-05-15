@@ -22,7 +22,6 @@ from .sexvids import scrape_sexvids
 from .shecahat import scrape_shecahat
 from .sparkalive import scrape_sparkalive
 from .xhamster import scrape_xhamster
-from .xnx import scrape_xnx
 from .yespornplease import scrape_yespornplease
 # Add more as you create more .py files
 
@@ -51,7 +50,6 @@ SCRAPER_FUNCS = [
     scrape_shecahat,
     scrape_sparkalive,
     scrape_xhamster,
-    scrape_xnx,
     scrape_yespornplease,
     # Add more here
 ]
