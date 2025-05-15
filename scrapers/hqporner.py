@@ -1,34 +1,34 @@
-
 import requests
 from bs4 import BeautifulSoup
 
-def scrape_hqporner(query, max_pages=10):
+def scrape_hqporner(query, mode="straight", page=1):
     results = []
     headers = {'User-Agent': 'Mozilla/5.0'}
-
-    for page in range(1, max_pages + 1):
-        url = f"https://hqporner.com/search/{query}/{page}.html"
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            break
-
-        soup = BeautifulSoup(response.content, 'html.parser')
-        videos = soup.select('div.video')
-
-        for video in videos:
-            try:
-                a_tag = video.select_one('a')
-                title = a_tag['title']
-                video_url = "https://hqporner.com" + a_tag['href']
-                preview = video.select_one('img')['src']
-
-                results.append({
-                    "title": title,
-                    "url": video_url,
-                    "preview": preview,
-                    "source": "hqporner"
-                })
-            except:
+    if mode == "gay":
+        url = f"https://hqporner.com/search/gay/{query}.html?page={page}"
+    elif mode == "trans":
+        url = f"https://hqporner.com/search/transgender/{query}.html?page={page}"
+    else:
+        url = f"https://hqporner.com/search/{query}.html?page={page}"
+    r = requests.get(url, headers=headers, timeout=10)
+    if r.status_code != 200:
+        return results
+    soup = BeautifulSoup(r.content, "html.parser")
+    for vid in soup.select("div.videoblock"):
+        try:
+            a = vid.select_one("a")
+            if not a or not a.has_attr('href'):
                 continue
-
+            title = a.get('title') or a.text.strip()
+            video_url = "https://hqporner.com" + a['href']
+            img = vid.select_one("img")
+            preview = img.get('src')
+            results.append({
+                "title": title,
+                "url": video_url,
+                "preview": preview,
+                "source": f"HQPorner ({mode})"
+            })
+        except Exception:
+            continue
     return results
